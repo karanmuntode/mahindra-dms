@@ -5,3 +5,4 @@ Flask-CORS==4.0.1
 Flask-Limiter==3.7.0
 Werkzeug==3.0.3
 scikit-learn==1.5.1
+pip freeze > requirements.txt
