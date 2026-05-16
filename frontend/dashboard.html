@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Mahindra DMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --blue-50:#EFF6FF; --blue-100:#DBEAFE; --blue-200:#BFDBFE;
+        --blue-400:#60A5FA; --blue-500:#3B82F6; --blue-600:#2563EB;
+        --blue-700:#1D4ED8; --blue-800:#1E40AF; --blue-900:#1E3A5F;
+        --white:#FFFFFF; --gray-50:#F8FAFC; --gray-100:#F1F5F9;
+        --gray-200:#E2E8F0; --gray-400:#94A3B8; --gray-500:#64748B;
+        --gray-600:#475569; --gray-700:#334155; --gray-800:#1E293B;
+        --green-100:#DCFCE7; --green-600:#16A34A;
+        --red-100:#FEE2E2; --red-600:#DC2626;
+        --yellow-100:#FEF9C3; --yellow-600:#CA8A04;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gray-50); color: var(--gray-800); display: flex; flex-direction: column; min-height: 100vh; }
+
+      /* TOPBAR */
+      .topbar { background: var(--white); border-bottom: 1px solid var(--blue-100); padding: 0 1.5rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 8px rgba(37,99,235,0.07); }
+      .logo { font-weight: 800; font-size: 1.15rem; color: var(--blue-700); display: flex; align-items: center; gap: 8px; }
+      .logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#2563EB,#1E40AF); border-radius: 7px; display:flex;align-items:center;justify-content:center; }
+      .user-info { display: flex; align-items: center; gap: 10px; }
+      .user-badge { background: var(--blue-50); border: 1px solid var(--blue-200); color: var(--blue-700); font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 100px; }
+      .loc-badge { background: var(--gray-100); border: 1px solid var(--gray-200); color: var(--gray-600); font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 100px; display:flex;align-items:center;gap:4px; }
+      .btn-logout { background: transparent; border: 1.5px solid var(--gray-200); color: var(--gray-600); border-radius: 8px; padding: 6px 14px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+      .btn-logout:hover { background: var(--red-100); border-color: #FCA5A5; color: var(--red-600); }
+
+      /* LAYOUT */
+      .layout { display: flex; flex: 1; }
+
+      /* SIDEBAR */
+      .sidebar { width: 220px; background: var(--white); border-right: 1px solid var(--blue-100); padding: 1.25rem 0; flex-shrink: 0; }
+      .sidebar-section { padding: 0.5rem 1rem 0.25rem; font-size: 0.7rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em; }
+      .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.25rem; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--gray-600); transition: all 0.15s; border-left: 3px solid transparent; margin: 1px 0; }
+      .sidebar-item:hover { background: var(--blue-50); color: var(--blue-700); }
+      .sidebar-item.active { background: var(--blue-50); color: var(--blue-700); font-weight: 600; border-left-color: var(--blue-600); }
+      .sidebar-icon { font-size: 1.1rem; }
+
+      /* CONTENT */
+      .content { flex: 1; padding: 1.5rem; overflow-auto; }
+      .section { display: none; }
+      .section.active { display: block; }
+
+      /* PAGE HEADER */
+      .page-header { margin-bottom: 1.5rem; }
+      .page-title { font-size: 1.4rem; font-weight: 800; color: var(--gray-800); }
+      .page-sub { color: var(--gray-500); font-size: 0.875rem; margin-top: 2px; }
+
+      /* CARD */
+      .card { background: var(--white); border: 1px solid var(--blue-100); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem; }
+      .card-title { font-size: 1rem; font-weight: 700; color: var(--gray-700); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
+
+      /* FORM ELEMENTS */
+      .form-row { display: grid; gap: 1rem; margin-bottom: 1rem; }
+      .form-row-2 { grid-template-columns: 1fr 1fr; }
+      .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+      .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--gray-600); margin-bottom: 5px; }
+      .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-200); border-radius: 9px; font-family: inherit; font-size: 0.9rem; color: var(--gray-800); outline: none; transition: border 0.2s, box-shadow 0.2s; background: var(--white); }
+      .form-input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+      select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+      .form-input::placeholder { color: #CBD5E1; }
+
+      .btn { padding: 10px 20px; border-radius: 9px; font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+      .btn-blue { background: linear-gradient(135deg,#2563EB,#1D4ED8); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
+      .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+      .btn-outline-blue { background: transparent; border: 1.5px solid var(--blue-500); color: var(--blue-600); }
+      .btn-outline-blue:hover { background: var(--blue-50); }
+      .btn-red { background: var(--red-100); color: var(--red-600); }
+      .btn-red:hover { background: #FECACA; }
+      .btn-green { background: var(--green-100); color: var(--green-600); }
+      .btn-green:hover { background: #BBF7D0; }
+      .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+      /* DROPZONE */
+      .dropzone { border: 2px dashed var(--blue-200); border-radius: 12px; padding: 2.5rem; text-align: center; transition: all 0.2s; cursor: pointer; background: var(--blue-50); }
+      .dropzone:hover, .dropzone.drag-over { border-color: var(--blue-500); background: var(--blue-100); }
+      .dropzone-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+      .dropzone-text { font-weight: 600; color: var(--blue-700); font-size: 0.95rem; }
+      .dropzone-sub { color: var(--gray-400); font-size: 0.8rem; margin-top: 4px; }
+      .file-preview { background: var(--white); border: 1px solid var(--blue-200); border-radius: 8px; padding: 10px 14px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
+      .file-name { font-weight: 600; color: var(--gray-700); }
+      .file-size { color: var(--gray-400); font-size: 0.78rem; }
+
+      /* SEARCH AUTOCOMPLETE */
+      .search-wrapper { position: relative; }
+      .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--white); border: 1.5px solid var(--blue-200); border-radius: 9px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); z-index: 100; max-height: 200px; overflow-y: auto; display: none; }
+      .autocomplete-item { padding: 10px 14px; cursor: pointer; font-size: 0.875rem; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
+      .autocomplete-item:last-child { border-bottom: none; }
+      .autocomplete-item:hover { background: var(--blue-50); color: var(--blue-700); }
+      .autocomplete-item .match { font-weight: 700; color: var(--blue-600); }
+
+      /* RESULTS TABLE */
+      .results-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+      .results-table th { padding: 10px 14px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+      .results-table td { padding: 12px 14px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+      .results-table tr:last-child td { border-bottom: none; }
+      .results-table tr:hover td { background: var(--blue-50); }
+      .doc-type-tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; background: var(--blue-100); color: var(--blue-800); }
+      .actions-cell { display: flex; gap: 6px; }
+
+      /* PAGINATION */
+      .pagination { display: flex; align-items: center; gap: 6px; justify-content: center; margin-top: 1.5rem; }
+      .page-btn { width: 34px; height: 34px; border-radius: 8px; border: 1.5px solid var(--gray-200); background: var(--white); color: var(--gray-600); font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+      .page-btn:hover { border-color: var(--blue-400); color: var(--blue-600); }
+      .page-btn.active { background: var(--blue-600); border-color: var(--blue-600); color: white; }
+      .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+      .page-info { font-size: 0.8rem; color: var(--gray-500); padding: 0 8px; }
+
+      /* EMPTY STATE */
+      .empty-state { text-align: center; padding: 3rem 2rem; color: var(--gray-400); }
+      .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+      .empty-text { font-size: 1rem; font-weight: 600; color: var(--gray-500); }
+      .empty-sub { font-size: 0.875rem; margin-top: 4px; }
+
+      /* ALERT */
+      .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+      .alert-success { background: var(--green-100); color: var(--green-600); border: 1px solid #86EFAC; }
+      .alert-error { background: var(--red-100); color: var(--red-600); border: 1px solid #FCA5A5; }
+      .alert-info { background: var(--blue-50); color: var(--blue-700); border: 1px solid var(--blue-200); }
+
+      /* SPINNER */
+      .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+      .spinner-blue { border-color: var(--blue-200); border-top-color: var(--blue-600); }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .tag-step { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-100); color: var(--blue-800); border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.75rem; }
+
+      .search-required-msg { background: var(--yellow-100); border: 1px solid #FDE047; border-radius: 10px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 10px; font-size: 0.875rem; color: var(--yellow-600); font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <script>
+      const _stored = localStorage.getItem("token");
+      if (!_stored) {
+        alert("Please login first");
+        window.location = "index.html";
+      }
+    </script>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            stroke-width="2.5"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14,2 14,8 20,8" />
+          </svg>
+        </div>
+        Mahindra DMS
+      </div>
+      <div class="user-info">
+        <div class="loc-badge">▸ <span id="userLocation">—</span></div>
+        <div class="user-badge" id="userRoleBadge">User</div>
+        <div
+          style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700)"
+          id="userNameDisplay"
+        >
+          —
+        </div>
+        <button class="btn-logout" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sidebar-section">Documents</div>
+        <div
+          class="sidebar-item active"
+          onclick="showSection('upload')"
+          id="nav-upload"
+        >
+          <span class="sidebar-icon">⬆️</span> Upload Document
+        </div>
+        <div
+          class="sidebar-item"
+          onclick="showSection('search')"
+          id="nav-search"
+        >
+          <span class="sidebar-icon">🔍</span> Search Documents
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="content">
+        <!-- ======== UPLOAD SECTION ======== -->
+        <div class="section active" id="section-upload">
+          <div class="page-header">
+            <div class="page-title">Upload Document</div>
+            <div class="page-sub">
+              Add a new document to your plant's repository
+            </div>
+          </div>
+
+          <div id="uploadAlert"></div>
+
+          <div class="card">
+            <div class="card-title">📋 Document Information</div>
+
+            <!-- Step 1: Doc Type -->
+            <div class="tag-step">Step 1 — Select Document Type</div>
+            <div class="form-group" style="margin-bottom: 1.25rem">
+              <label
+                >Document Type
+                <span style="color: var(--red-600)">*</span></label
+              >
+              <select
+                id="uploadDocType"
+                class="form-input"
+                onchange="onUploadTypeChange()"
+              >
+                <option value="">— Select document type —</option>
+              </select>
+            </div>
+
+            <div id="uploadFormFields" style="display: none">
+              <!-- Step 2 -->
+              <div class="tag-step">Step 2 — Enter Document Details</div>
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label
+                    >Part Number
+                    <span style="color: var(--red-600)">*</span></label
+                  >
+                  <input
+                    id="uploadPartNo"
+                    class="form-input"
+                    placeholder="e.g. MHD-XYZ-001"
+                  />
+                </div>
+                <div class="form-group">
+                  <label
+                    >Unique ID / Revision No
+                    <span style="color: var(--red-600)">*</span></label
+                  >
+                  <input
+                    id="uploadUniqueId"
+                    class="form-input"
+                    placeholder="e.g. REV-2026-A"
+                  />
+                </div>
+              </div>
+
+              <!-- Step 3 -->
+              <div class="tag-step">Step 3 — Attach File</div>
+              <div
+                class="dropzone"
+                id="dropzone"
+                onclick="document.getElementById('fileInput').click()"
+                ondragover="onDragOver(event)"
+                ondragleave="onDragLeave(event)"
+                ondrop="onDrop(event)"
+              >
+                <div class="dropzone-icon">📄</div>
+                <div class="dropzone-text">Click to browse or drag & drop</div>
+                <div class="dropzone-sub">
+                  PDF, PNG, JPG, DOCX, XLSX — Max 25MB
+                </div>
+              </div>
+              <input
+                type="file"
+                id="fileInput"
+                style="display: none"
+                accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx"
+                onchange="onFileSelect()"
+              />
+              <div id="filePreview" style="display: none" class="file-preview">
+                <div>
+                  <div class="file-name" id="fileName"></div>
+                  <div class="file-size" id="fileSize"></div>
+                </div>
+                <button class="btn btn-sm btn-red" onclick="clearFile()">
+                  ✕ Remove
+                </button>
+              </div>
+
+              <div style="margin-top: 1.25rem">
+                <button
+                  class="btn btn-blue"
+                  id="uploadBtn"
+                  onclick="doUpload()"
+                >
+                  ⬆️ Upload Document
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======== SEARCH SECTION ======== -->
+        <div class="section" id="section-search">
+          <div class="page-header">
+            <div class="page-title">Search Documents</div>
+            <div class="page-sub">
+              Find documents in your plant's repository
+            </div>
+          </div>
+
+          <div id="searchAlert"></div>
+
+          <div class="card">
+            <div class="card-title">🔍 Search Filters</div>
+
+            <!-- Step 1 -->
+            <div class="tag-step">Step 1 — Select Document Type First</div>
+            <div class="form-group" style="margin-bottom: 1.25rem">
+              <label
+                >Document Type
+                <span style="color: var(--red-600)">*</span></label
+              >
+              <select
+                id="searchDocType"
+                class="form-input"
+                onchange="onSearchTypeChange()"
+              >
+                <option value="">— Select document type to search —</option>
+              </select>
+            </div>
+
+            <div id="searchFields" style="display: none">
+              <div class="tag-step">Step 2 — Enter search term</div>
+              <div class="form-row form-row-2" style="margin-bottom: 0">
+                <div class="form-group">
+                  <label>Part No / Document Name</label>
+                  <div class="search-wrapper">
+                    <input
+                      id="searchQuery"
+                      class="form-input"
+                      placeholder="Type to search with suggestions..."
+                      autocomplete="off"
+                      oninput="onSearchInput()"
+                      onkeydown="if (event.key === 'Enter') doSearch(1);"
+                    />
+                    <div class="autocomplete-list" id="autocompleteList"></div>
+                  </div>
+                </div>
+                <div
+                  class="form-group"
+                  style="display: flex; align-items: flex-end"
+                >
+                  <button
+                    class="btn btn-blue"
+                    style="width: 100%"
+                    onclick="doSearch(1)"
+                  >
+                    🔍 Search
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="searchPrompt"
+              class="search-required-msg"
+              style="display: none; margin-top: 1rem"
+            >
+              ⚠️ Please select a document type above before searching
+            </div>
+          </div>
+
+          <!-- RESULTS -->
+          <div class="card" id="resultsCard" style="display: none">
+            <div class="card-title" id="resultsTitle">Results</div>
+            <div id="resultsContainer"></div>
+            <div id="paginationContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer
+      style="
+        background: var(--white);
+        border-top: 1px solid var(--blue-100);
+        padding: 12px 1.5rem;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--gray-400);
+      "
+    >
+      © 2026 Mahindra & Mahindra — Document Management System
+    </footer>
+
+    <script>
+      const BASE_URL = "http://localhost:5000";
+      let currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      let docTypes = [];
+      let autocompleteTimer = null;
+      let searchState = { docType: "", query: "", page: 1 };
+
+      // ===== INIT =====
+      window.onload = async () => {
+        document.getElementById("userNameDisplay").textContent =
+          currentUser.username || "—";
+        document.getElementById("userLocation").textContent =
+          currentUser.location || "—";
+        const roleBadge = document.getElementById("userRoleBadge");
+        roleBadge.textContent =
+          currentUser.role === "subadmin" ? "⭐ Subadmin" : "👤 User";
+
+        await loadDocTypes();
+      };
+
+      async function loadDocTypes() {
+        try {
+          const res = await fetch(`${BASE_URL}/document/types`);
+          const data = await res.json();
+          docTypes = data.types || [];
+          populateDocTypeSelects();
+        } catch (e) {
+          docTypes = [
+            "Packaging Signoff",
+            "SOP",
+            "L0",
+            "L1",
+            "L2",
+            "L3",
+            "Control Plan",
+            "PFMEA",
+            "Drawing",
+            "Inspection Report",
+            "Work Instruction",
+            "Quality Plan",
+            "ECN",
+            "BOM",
+            "Test Report",
+          ];
+          populateDocTypeSelects();
+        }
+      }
+
+      function populateDocTypeSelects() {
+        const selects = ["uploadDocType", "searchDocType"];
+        selects.forEach((id) => {
+          const el = document.getElementById(id);
+          const firstOpt = el.options[0];
+          el.innerHTML = "";
+          el.appendChild(firstOpt);
+          docTypes.forEach((t) => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = t;
+            el.appendChild(opt);
+          });
+        });
+      }
+
+      // ===== SECTION SWITCH =====
+      function showSection(name) {
+        document
+          .querySelectorAll(".section")
+          .forEach((s) => s.classList.remove("active"));
+        document
+          .querySelectorAll(".sidebar-item")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(`section-${name}`).classList.add("active");
+        document.getElementById(`nav-${name}`).classList.add("active");
+      }
+
+      // ===== UPLOAD =====
+      function onUploadTypeChange() {
+        const val = document.getElementById("uploadDocType").value;
+        document.getElementById("uploadFormFields").style.display = val
+          ? ""
+          : "none";
+      }
+
+      function onDragOver(e) {
+        e.preventDefault();
+        document.getElementById("dropzone").classList.add("drag-over");
+      }
+      function onDragLeave(e) {
+        document.getElementById("dropzone").classList.remove("drag-over");
+      }
+      function onDrop(e) {
+        e.preventDefault();
+        document.getElementById("dropzone").classList.remove("drag-over");
+        const f = e.dataTransfer.files[0];
+        if (f) {
+          document.getElementById("fileInput").files = e.dataTransfer.files;
+          showFilePreview(f);
+        }
+      }
+
+      function onFileSelect() {
+        const f = document.getElementById("fileInput").files[0];
+        if (f) showFilePreview(f);
+      }
+
+      function showFilePreview(f) {
+        document.getElementById("dropzone").style.display = "none";
+        document.getElementById("filePreview").style.display = "flex";
+        document.getElementById("fileName").textContent = f.name;
+        document.getElementById("fileSize").textContent =
+          (f.size / 1024 / 1024).toFixed(2) + " MB";
+      }
+
+      function clearFile() {
+        document.getElementById("fileInput").value = "";
+        document.getElementById("dropzone").style.display = "";
+        document.getElementById("filePreview").style.display = "none";
+      }
+
+      function showUploadAlert(msg, type = "error") {
+        const el = document.getElementById("uploadAlert");
+        el.innerHTML = `<div class="alert alert-${type}">${type === "error" ? "❌" : type === "success" ? "✅" : "ℹ️"} ${msg}</div>`;
+        setTimeout(() => {
+          el.innerHTML = "";
+        }, 5000);
+      }
+
+      async function doUpload() {
+        const docType = document.getElementById("uploadDocType").value;
+        const partNo = document.getElementById("uploadPartNo").value.trim();
+        const uniqueId = document.getElementById("uploadUniqueId").value.trim();
+        const file = document.getElementById("fileInput").files[0];
+
+        if (!docType) {
+          showUploadAlert("Please select a document type");
+          return;
+        }
+        if (!partNo || !uniqueId) {
+          showUploadAlert("Part No and Unique ID are required");
+          return;
+        }
+        if (!file) {
+          showUploadAlert("Please select a file to upload");
+          return;
+        }
+
+        const btn = document.getElementById("uploadBtn");
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> Uploading...`;
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("part_no", partNo);
+        formData.append("unique_id", uniqueId);
+        formData.append("doc_type", docType);
+
+        try {
+          const res = await fetch(`${BASE_URL}/document/upload`, {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+            body: formData,
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            showUploadAlert("Document uploaded successfully!", "success");
+            document.getElementById("uploadPartNo").value = "";
+            document.getElementById("uploadUniqueId").value = "";
+            clearFile();
+          } else if (res.status === 401) {
+            logout();
+          } else {
+            showUploadAlert(data.msg || "Upload failed");
+          }
+        } catch (e) {
+          showUploadAlert("Server error. Please try again.");
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "⬆️ Upload Document";
+      }
+
+      // ===== SEARCH =====
+      function onSearchTypeChange() {
+        const val = document.getElementById("searchDocType").value;
+        document.getElementById("searchFields").style.display = val
+          ? ""
+          : "none";
+        document.getElementById("searchPrompt").style.display = val
+          ? "none"
+          : "";
+        document.getElementById("resultsCard").style.display = "none";
+        document.getElementById("searchQuery").value = "";
+        document.getElementById("autocompleteList").style.display = "none";
+        searchState.docType = val;
+      }
+
+      let acTimer = null;
+      function onSearchInput() {
+        clearTimeout(acTimer);
+        const q = document.getElementById("searchQuery").value.trim();
+        if (q.length < 2) {
+          document.getElementById("autocompleteList").style.display = "none";
+          return;
+        }
+        acTimer = setTimeout(() => fetchAutocomplete(q), 300);
+      }
+
+      async function fetchAutocomplete(q) {
+        const docType = document.getElementById("searchDocType").value;
+        if (!docType) return;
+        try {
+          const res = await fetch(
+            `${BASE_URL}/document/autocomplete?doc_type=${encodeURIComponent(docType)}&q=${encodeURIComponent(q)}`,
+            {
+              headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+              },
+            },
+          );
+          const data = await res.json();
+          const list = document.getElementById("autocompleteList");
+
+          if (!data.suggestions || data.suggestions.length === 0) {
+            list.style.display = "none";
+            return;
+          }
+
+          list.innerHTML = data.suggestions
+            .map(
+              (s) => `
+      <div class="autocomplete-item" onclick="selectSuggestion('${s.part_no}', '${s.unique_id}')">
+        <span class="match">${s.part_no}</span> — ${s.unique_id}
+      </div>
+    `,
+            )
+            .join("");
+          list.style.display = "block";
+        } catch (e) {}
+      }
+
+      function selectSuggestion(partNo, uniqueId) {
+        document.getElementById("searchQuery").value = partNo;
+        document.getElementById("autocompleteList").style.display = "none";
+        doSearch(1);
+      }
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".search-wrapper")) {
+          document.getElementById("autocompleteList").style.display = "none";
+        }
+      });
+
+      function showSearchAlert(msg, type = "error") {
+        const el = document.getElementById("searchAlert");
+        el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        setTimeout(() => {
+          el.innerHTML = "";
+        }, 5000);
+      }
+
+      async function doSearch(page) {
+        const docType = document.getElementById("searchDocType").value;
+        if (!docType) {
+          showSearchAlert("Please select a document type first", "error");
+          return;
+        }
+
+        const query = document.getElementById("searchQuery").value.trim();
+        document.getElementById("autocompleteList").style.display = "none";
+
+        searchState = { docType, query, page };
+
+        const resultsCard = document.getElementById("resultsCard");
+        const container = document.getElementById("resultsContainer");
+        resultsCard.style.display = "";
+        container.innerHTML = `<div style="text-align:center;padding:2rem"><div class="spinner spinner-blue" style="width:28px;height:28px;margin:auto"></div><p style="margin-top:1rem;color:var(--gray-400);font-size:0.875rem">Searching...</p></div>`;
+        document.getElementById("paginationContainer").innerHTML = "";
+
+        try {
+          const res = await fetch(`${BASE_URL}/document/search`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+            body: JSON.stringify({
+              doc_type: docType,
+              part_no: query,
+              page,
+              per_page: 10,
+            }),
+          });
+
+          if (res.status === 401) {
+            logout();
+            return;
+          }
+
+          const data = await res.json();
+          const results = data.results || [];
+          const pagination = data.pagination || {};
+
+          document.getElementById("resultsTitle").textContent =
+            `Results — ${docType} (${pagination.total || results.length} found)`;
+
+          if (results.length === 0) {
+            container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">No documents found</div>
+          <div class="empty-sub">No ${docType} documents match your search in ${currentUser.location}</div>
+        </div>`;
+            return;
+          }
+
+          container.innerHTML = `
+      <div style="overflow-x:auto">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Part No</th>
+              <th>Unique ID</th>
+              <th>Document Type</th>
+              <th>Uploaded By</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${results
+              .map(
+                (d, i) => `
+              <tr>
+                <td style="color:var(--gray-400);font-size:0.8rem">${(page - 1) * 10 + i + 1}</td>
+                <td style="font-weight:700">${escHtml(d.part_no)}</td>
+                <td>${escHtml(d.unique_id)}</td>
+                <td><span class="doc-type-tag">${escHtml(d.doc_type)}</span></td>
+                <td style="color:var(--gray-500)">${escHtml(d.uploaded_by || "—")}</td>
+                <td style="color:var(--gray-400);font-size:0.8rem">${d.uploaded_at ? d.uploaded_at.slice(0, 10) : "—"}</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn btn-sm btn-green" onclick="doDownload(${d.id}, '${escHtml(d.original_name || d.filename)}')">⬇ Download</button>
+                    <button class="btn btn-sm btn-red" onclick="doDelete(${d.id})">🗑 Delete</button>
+                  </div>
+                </td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+          renderPagination(pagination);
+        } catch (e) {
+          container.innerHTML = `<div class="alert alert-error">Search failed. Please try again.</div>`;
+        }
+      }
+
+      function renderPagination(p) {
+        if (!p || p.total_pages <= 1) {
+          document.getElementById("paginationContainer").innerHTML = "";
+          return;
+        }
+        const { page, total_pages, total, per_page } = p;
+        let html = `<div class="pagination">
+    <button class="page-btn" onclick="doSearch(${page - 1})" ${page <= 1 ? "disabled" : ""}>‹</button>`;
+
+        const start = Math.max(1, page - 2),
+          end = Math.min(total_pages, page + 2);
+        if (start > 1)
+          html += `<button class="page-btn" onclick="doSearch(1)">1</button>${start > 2 ? '<span class="page-info">…</span>' : ""}`;
+        for (let i = start; i <= end; i++) {
+          html += `<button class="page-btn ${i === page ? "active" : ""}" onclick="doSearch(${i})">${i}</button>`;
+        }
+        if (end < total_pages)
+          html += `${end < total_pages - 1 ? '<span class="page-info">…</span>' : ""}<button class="page-btn" onclick="doSearch(${total_pages})">${total_pages}</button>`;
+
+        html += `<button class="page-btn" onclick="doSearch(${page + 1})" ${page >= total_pages ? "disabled" : ""}>›</button>
+    <span class="page-info">Showing ${(page - 1) * per_page + 1}–${Math.min(page * per_page, total)} of ${total}</span>
+  </div>`;
+        document.getElementById("paginationContainer").innerHTML = html;
+      }
+
+      async function doDownload(id, filename) {
+        try {
+          const res = await fetch(`${BASE_URL}/document/download/${id}`, {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+          });
+          if (!res.ok) {
+            alert("Download failed");
+            return;
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename || "document";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          alert("Download error");
+        }
+      }
+
+      async function doDelete(id) {
+        if (!confirm("Are you sure you want to delete this document?")) return;
+        try {
+          const res = await fetch(`${BASE_URL}/document/delete/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+          });
+          const data = await res.json();
+          alert(data.msg || "Deleted");
+          doSearch(searchState.page);
+        } catch (e) {
+          alert("Delete failed");
+        }
+      }
+
+      function escHtml(s) {
+        if (!s) return "";
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location = "index.html";
+      }
+    </script>
+  </body>
+</html>

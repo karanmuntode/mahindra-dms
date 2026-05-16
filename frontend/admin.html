@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel — Mahindra DMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --blue-50:#EFF6FF; --blue-100:#DBEAFE; --blue-200:#BFDBFE;
+        --blue-400:#60A5FA; --blue-500:#3B82F6; --blue-600:#2563EB;
+        --blue-700:#1D4ED8; --blue-800:#1E40AF; --blue-900:#1E3A5F;
+        --white:#FFFFFF; --gray-50:#F8FAFC; --gray-100:#F1F5F9;
+        --gray-200:#E2E8F0; --gray-300:#CBD5E1; --gray-400:#94A3B8;
+        --gray-500:#64748B; --gray-600:#475569; --gray-700:#334155;
+        --gray-800:#1E293B;
+        --green-100:#DCFCE7; --green-500:#22C55E; --green-600:#16A34A;
+        --red-100:#FEE2E2; --red-500:#EF4444; --red-600:#DC2626;
+        --yellow-100:#FEF9C3; --yellow-600:#CA8A04;
+        --purple-100:#F3E8FF; --purple-600:#9333EA;
+      }
+      * { box-sizing: border-box; margin:0; padding:0; }
+      body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--gray-50); color:var(--gray-800); display:flex; flex-direction:column; min-height:100vh; }
+
+      /* TOPBAR */
+      .topbar { background:var(--white); border-bottom:1px solid var(--blue-100); padding:0 1.5rem; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 1px 8px rgba(37,99,235,0.07); }
+      .logo { font-weight:800; font-size:1.15rem; color:var(--blue-700); display:flex; align-items:center; gap:8px; }
+      .logo-icon { width:30px; height:30px; background:linear-gradient(135deg,#2563EB,#1E40AF); border-radius:7px; display:flex;align-items:center;justify-content:center; }
+      .admin-badge { background:linear-gradient(135deg,#1D4ED8,#1E40AF); color:white; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:100px; }
+      .user-info { display:flex; align-items:center; gap:10px; }
+      .btn-logout { background:transparent; border:1.5px solid var(--gray-200); color:var(--gray-600); border-radius:8px; padding:6px 14px; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+      .btn-logout:hover { background:var(--red-100); border-color:#FCA5A5; color:var(--red-600); }
+
+      /* LAYOUT */
+      .layout { display:flex; flex:1; }
+
+      /* SIDEBAR */
+      .sidebar { width:230px; background:var(--white); border-right:1px solid var(--blue-100); padding:1rem 0; flex-shrink:0; }
+      .sidebar-section { padding:0.75rem 1rem 0.25rem; font-size:0.68rem; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.08em; }
+      .sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 1.25rem; cursor:pointer; font-size:0.875rem; font-weight:500; color:var(--gray-600); transition:all 0.15s; border-left:3px solid transparent; }
+      .sidebar-item:hover { background:var(--blue-50); color:var(--blue-700); }
+      .sidebar-item.active { background:var(--blue-50); color:var(--blue-700); font-weight:700; border-left-color:var(--blue-600); }
+      .sidebar-icon { font-size:1.1rem; }
+      .sidebar-badge { margin-left:auto; background:var(--red-500); color:white; font-size:0.7rem; font-weight:700; border-radius:100px; padding:1px 7px; min-width:20px; text-align:center; }
+
+      /* CONTENT */
+      .content { flex:1; padding:1.5rem; overflow-auto; }
+      .section { display:none; }
+      .section.active { display:block; animation:fadeIn 0.25s ease; }
+      @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+      /* PAGE HEADER */
+      .page-header { margin-bottom:1.5rem; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+      .page-title { font-size:1.4rem; font-weight:800; color:var(--gray-800); }
+      .page-sub { color:var(--gray-500); font-size:0.875rem; margin-top:2px; }
+
+      /* STAT CARDS */
+      .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+      .stat-card { background:var(--white); border:1px solid var(--blue-100); border-radius:14px; padding:1.25rem; position:relative; overflow:hidden; }
+      .stat-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:0.06; transform:translate(20px,-20px); }
+      .stat-card.blue::before { background:#2563EB; }
+      .stat-card.green::before { background:#16A34A; }
+      .stat-card.yellow::before { background:#CA8A04; }
+      .stat-card.purple::before { background:#9333EA; }
+      .stat-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:0.75rem; }
+      .stat-icon.blue { background:var(--blue-100); }
+      .stat-icon.green { background:var(--green-100); }
+      .stat-icon.yellow { background:var(--yellow-100); }
+      .stat-icon.purple { background:var(--purple-100); }
+      .stat-value { font-size:2rem; font-weight:800; color:var(--gray-800); line-height:1; }
+      .stat-label { font-size:0.8rem; font-weight:600; color:var(--gray-500); margin-top:4px; }
+
+      /* CARD */
+      .card { background:var(--white); border:1px solid var(--blue-100); border-radius:14px; padding:1.25rem; margin-bottom:1.25rem; }
+      .card-title { font-size:0.95rem; font-weight:700; color:var(--gray-700); margin-bottom:1rem; display:flex; align-items:center; gap:8px; }
+      .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem; }
+
+      /* CHARTS ROW */
+      .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem; }
+      .chart-wrap { position:relative; height:220px; }
+
+      /* FORM ELEMENTS */
+      .form-input { padding:9px 13px; border:1.5px solid var(--gray-200); border-radius:9px; font-family:inherit; font-size:0.875rem; color:var(--gray-800); outline:none; transition:border 0.2s; background:var(--white); }
+      .form-input:focus { border-color:var(--blue-500); box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+      select.form-input { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:30px; }
+      .form-input::placeholder { color:#CBD5E1; }
+
+      .btn { padding:8px 16px; border-radius:9px; font-family:inherit; font-size:0.8rem; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
+      .btn-blue { background:linear-gradient(135deg,#2563EB,#1D4ED8); color:white; box-shadow:0 2px 6px rgba(37,99,235,0.2); }
+      .btn-blue:hover { box-shadow:0 4px 12px rgba(37,99,235,0.3); transform:translateY(-1px); }
+      .btn-green { background:var(--green-100); color:var(--green-600); }
+      .btn-green:hover { background:#BBF7D0; }
+      .btn-red { background:var(--red-100); color:var(--red-600); }
+      .btn-red:hover { background:#FECACA; }
+      .btn-yellow { background:var(--yellow-100); color:var(--yellow-600); }
+      .btn-yellow:hover { background:#FEF08A; }
+      .btn-purple { background:var(--purple-100); color:var(--purple-600); }
+      .btn-sm { padding:5px 10px; font-size:0.75rem; border-radius:7px; }
+      .btn-outline { background:transparent; border:1.5px solid var(--gray-200); color:var(--gray-600); }
+      .btn-outline:hover { background:var(--gray-100); }
+
+      /* TABLE */
+      .data-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+      .data-table th { padding:9px 13px; text-align:left; font-size:0.72rem; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; background:var(--gray-50); border-bottom:1px solid var(--gray-200); white-space:nowrap; }
+      .data-table td { padding:11px 13px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+      .data-table tr:last-child td { border-bottom:none; }
+      .data-table tr:hover td { background:var(--blue-50); }
+      .actions-cell { display:flex; gap:5px; flex-wrap:wrap; }
+
+      /* BADGES */
+      .badge { display:inline-flex; align-items:center; padding:3px 9px; border-radius:100px; font-size:0.72rem; font-weight:700; }
+      .badge-approved { background:var(--green-100); color:var(--green-600); }
+      .badge-pending { background:var(--yellow-100); color:var(--yellow-600); }
+      .badge-admin { background:linear-gradient(135deg,#DBEAFE,#BFDBFE); color:var(--blue-800); }
+      .badge-subadmin { background:var(--purple-100); color:var(--purple-600); }
+      .badge-user { background:var(--gray-100); color:var(--gray-600); }
+      .badge-doc { background:var(--blue-100); color:var(--blue-800); }
+
+      /* SEARCH BAR */
+      .search-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+      .search-input { min-width:180px; }
+
+      /* PAGINATION */
+      .pagination { display:flex; align-items:center; gap:5px; justify-content:center; margin-top:1.25rem; }
+      .page-btn { width:32px; height:32px; border-radius:7px; border:1.5px solid var(--gray-200); background:var(--white); color:var(--gray-600); font-family:inherit; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+      .page-btn:hover { border-color:var(--blue-400); color:var(--blue-600); }
+      .page-btn.active { background:var(--blue-600); border-color:var(--blue-600); color:white; }
+      .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
+      .page-info-text { font-size:0.78rem; color:var(--gray-400); padding:0 6px; }
+
+      /* EMPTY */
+      .empty-state { text-align:center; padding:2.5rem; color:var(--gray-400); }
+      .empty-icon { font-size:2.5rem; margin-bottom:0.75rem; }
+      .empty-text { font-weight:600; color:var(--gray-500); font-size:0.9rem; }
+
+      /* ALERT */
+      .toast { position:fixed; bottom:1.5rem; right:1.5rem; z-index:999; max-width:320px; }
+      .toast-item { background:var(--white); border:1px solid var(--gray-200); border-radius:10px; padding:12px 16px; box-shadow:0 4px 20px rgba(0,0,0,0.1); font-size:0.875rem; font-weight:500; margin-bottom:8px; display:flex; align-items:center; gap:8px; animation:slideIn 0.3s ease; }
+      .toast-item.success { border-left:4px solid var(--green-500); }
+      .toast-item.error { border-left:4px solid var(--red-500); }
+      .toast-item.info { border-left:4px solid var(--blue-500); }
+      @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+      /* SPINNER */
+      .spinner { width:18px; height:18px; border:2px solid var(--blue-200); border-top-color:var(--blue-600); border-radius:50%; animation:spin 0.6s linear infinite; display:inline-block; }
+      @keyframes spin { to{transform:rotate(360deg)} }
+      .loading-center { display:flex; justify-content:center; align-items:center; padding:3rem; gap:0.75rem; color:var(--gray-400); font-size:0.875rem; }
+
+      @media (max-width:900px) {
+        .stats-grid { grid-template-columns:1fr 1fr; }
+        .charts-grid { grid-template-columns:1fr; }
+        .sidebar { width:180px; }
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      if (!localStorage.getItem("token")) {
+        alert("Please login first");
+        window.location = "index.html";
+      }
+      const _u = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!_u.role || (_u.role !== "admin" && _u.role !== "subadmin")) {
+        alert("Admin access required");
+        window.location = "dashboard.html";
+      }
+    </script>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            stroke-width="2.5"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </div>
+        Mahindra DMS
+      </div>
+      <div class="user-info">
+        <div class="admin-badge" id="adminRoleBadge">Admin</div>
+        <div
+          style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700)"
+          id="adminNameDisplay"
+        >
+          —
+        </div>
+        <button class="btn-logout" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sidebar-section">Overview</div>
+        <div
+          class="sidebar-item active"
+          onclick="showSection('dashboard')"
+          id="nav-dashboard"
+        >
+          <span class="sidebar-icon">📊</span> Dashboard
+        </div>
+
+        <div class="sidebar-section">User Management</div>
+        <div
+          class="sidebar-item"
+          onclick="showSection('pending')"
+          id="nav-pending"
+        >
+          <span class="sidebar-icon">▸</span> Pending Approval
+          <span class="sidebar-badge" id="pendingBadge">0</span>
+        </div>
+        <div
+          class="sidebar-item"
+          onclick="showSection('allusers')"
+          id="nav-allusers"
+        >
+          <span class="sidebar-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"
+              />
+            </svg>
+          </span>
+          All Users
+        </div>
+
+        <div class="sidebar-section">Documents</div>
+        <div class="sidebar-item" onclick="showSection('docs')" id="nav-docs">
+          <span class="sidebar-icon">📁</span> All Documents
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="content">
+        <!-- ======== DASHBOARD ======== -->
+        <div class="section active" id="section-dashboard">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Dashboard</div>
+              <div class="page-sub">
+                Overview of system activity and statistics
+              </div>
+            </div>
+            <button class="btn btn-outline" onclick="loadDashboard()">
+              🔄 Refresh
+            </button>
+          </div>
+
+          <!-- STAT CARDS -->
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-icon blue">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"
+                  />
+                </svg>
+              </div>
+              <div class="stat-value" id="statTotal">—</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-icon green">✅</div>
+              <div class="stat-value" id="statApproved">—</div>
+              <div class="stat-label">Approved Users</div>
+            </div>
+            <div class="stat-card yellow">
+              <div class="stat-icon yellow">⏳</div>
+              <div class="stat-value" id="statPending">—</div>
+              <div class="stat-label">Pending Approval</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-icon purple">📄</div>
+              <div class="stat-value" id="statDocs">—</div>
+              <div class="stat-label">Total Documents</div>
+            </div>
+          </div>
+
+          <!-- CHARTS -->
+          <div class="charts-grid">
+            <div class="card">
+              <div class="card-title">User Status</div>
+              <div class="chart-wrap"><canvas id="userChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title">📄 Documents by Type</div>
+              <div class="chart-wrap"><canvas id="docTypeChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title">📍 Documents by Location</div>
+              <div class="chart-wrap"><canvas id="docLocChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title">🏭 Users by Location</div>
+              <div class="chart-wrap"><canvas id="userLocChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======== PENDING USERS ======== -->
+        <div class="section" id="section-pending">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Pending Approvals</div>
+              <div class="page-sub">
+                Review and approve user registration requests
+              </div>
+            </div>
+            <button class="btn btn-outline" onclick="loadPending(1)">
+              🔄 Refresh
+            </button>
+          </div>
+
+          <div class="card">
+            <div id="pendingTableWrap">
+              <div class="loading-center">
+                <div class="spinner"></div>
+                Loading...
+              </div>
+            </div>
+            <div id="pendingPagination"></div>
+          </div>
+        </div>
+
+        <!-- ======== ALL USERS ======== -->
+        <div class="section" id="section-allusers">
+          <div class="page-header">
+            <div>
+              <div class="page-title">All Users</div>
+              <div class="page-sub">Manage all registered users</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="search-bar">
+                <input
+                  type="text"
+                  id="userSearch"
+                  class="form-input search-input"
+                  placeholder="Search username..."
+                  oninput="debounceUserSearch()"
+                />
+                <select
+                  id="userLocFilter"
+                  class="form-input"
+                  onchange="loadAllUsers(1)"
+                >
+                  <option value="">All Locations</option>
+                  <option value="Igatpuri">Igatpuri</option>
+                  <option value="Nashik Plant 1">Nashik Plant 1</option>
+                  <option value="Nashik Plant 2">Nashik Plant 2</option>
+                  <option value="Chakan">Chakan</option>
+                  <option value="Zahirabad">Zahirabad</option>
+                  <option value="Haridwar">Haridwar</option>
+                </select>
+                <select
+                  id="userRoleFilter"
+                  class="form-input"
+                  onchange="loadAllUsers(1)"
+                >
+                  <option value="">All Roles</option>
+                  <option value="admin">Admin</option>
+                  <option value="subadmin">Subadmin</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+            </div>
+            <div style="overflow-x: auto">
+              <div id="allUsersWrap">
+                <div class="loading-center">
+                  <div class="spinner"></div>
+                  Loading...
+                </div>
+              </div>
+            </div>
+            <div id="allUsersPagination"></div>
+          </div>
+        </div>
+
+        <!-- ======== DOCUMENTS ======== -->
+        <div class="section" id="section-docs">
+          <div class="page-header">
+            <div>
+              <div class="page-title">All Documents</div>
+              <div class="page-sub">View and manage all uploaded documents</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="search-bar">
+                <select
+                  id="docTypeFilter"
+                  class="form-input"
+                  onchange="loadDocs(1)"
+                >
+                  <option value="">All Types</option>
+                </select>
+                <select
+                  id="docLocFilter"
+                  class="form-input"
+                  onchange="loadDocs(1)"
+                >
+                  <option value="">All Locations</option>
+                  <option value="Igatpuri">Igatpuri</option>
+                  <option value="Nashik Plant 1">Nashik Plant 1</option>
+                  <option value="Nashik Plant 2">Nashik Plant 2</option>
+                  <option value="Chakan">Chakan</option>
+                  <option value="Zahirabad">Zahirabad</option>
+                  <option value="Haridwar">Haridwar</option>
+                </select>
+                <button class="btn btn-outline" onclick="loadDocs(1)">
+                  🔍 Filter
+                </button>
+              </div>
+            </div>
+            <div style="overflow-x: auto">
+              <div id="docsWrap">
+                <div class="loading-center">
+                  <div class="spinner"></div>
+                  Loading...
+                </div>
+              </div>
+            </div>
+            <div id="docsPagination"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer
+      style="
+        background: var(--white);
+        border-top: 1px solid var(--blue-100);
+        padding: 10px 1.5rem;
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--gray-400);
+      "
+    >
+      © 2026 Mahindra & Mahindra — Document Management System Admin Panel
+    </footer>
+
+    <!-- TOAST -->
+    <div class="toast" id="toastContainer"></div>
+
+    <script>
+      const BASE_URL = "http://localhost:5000";
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const token = () => localStorage.getItem("token");
+
+      let charts = {};
+      let userSearchTimer = null;
+
+      // ===== INIT =====
+      window.onload = () => {
+        document.getElementById("adminNameDisplay").textContent =
+          currentUser.username || "—";
+        document.getElementById("adminRoleBadge").textContent =
+          currentUser.role === "subadmin" ? "⭐ Subadmin" : "🛡 Admin";
+        loadDocTypes();
+        loadDashboard();
+        loadPendingCount();
+      };
+
+      function authHeaders() {
+        return {
+          Authorization: "Bearer " + token(),
+          "Content-Type": "application/json",
+        };
+      }
+
+      // ===== SECTION SWITCH =====
+      function showSection(name) {
+        document
+          .querySelectorAll(".section")
+          .forEach((s) => s.classList.remove("active"));
+        document
+          .querySelectorAll(".sidebar-item")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(`section-${name}`).classList.add("active");
+        document.getElementById(`nav-${name}`).classList.add("active");
+
+        if (name === "dashboard") loadDashboard();
+        if (name === "pending") loadPending(1);
+        if (name === "allusers") loadAllUsers(1);
+        if (name === "docs") loadDocs(1);
+      }
+
+      // ===== TOAST =====
+      function toast(msg, type = "info") {
+        const icons = { success: "✅", error: "❌", info: "ℹ️" };
+        const el = document.createElement("div");
+        el.className = `toast-item ${type}`;
+        el.innerHTML = `${icons[type] || "ℹ️"} ${msg}`;
+        document.getElementById("toastContainer").appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+      }
+
+      // ===== DASHBOARD =====
+      async function loadDashboard() {
+        try {
+          const res = await fetch(`${BASE_URL}/admin/stats`, {
+            headers: authHeaders(),
+          });
+          if (res.status === 401) {
+            logout();
+            return;
+          }
+          const data = await res.json();
+
+          document.getElementById("statTotal").textContent =
+            data.total_users ?? "—";
+          document.getElementById("statApproved").textContent =
+            data.approved_users ?? "—";
+          document.getElementById("statPending").textContent =
+            data.pending_users ?? "—";
+          document.getElementById("statDocs").textContent =
+            data.total_docs ?? "—";
+          document.getElementById("pendingBadge").textContent =
+            data.pending_users || 0;
+
+          buildCharts(data);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      const CHART_COLORS = [
+        "#2563EB",
+        "#16A34A",
+        "#CA8A04",
+        "#DC2626",
+        "#9333EA",
+        "#0891B2",
+        "#D97706",
+        "#059669",
+        "#7C3AED",
+        "#DB2777",
+        "#0284C7",
+        "#65A30D",
+      ];
+
+      function buildCharts(data) {
+        // User Status Pie
+        buildChart(
+          "userChart",
+          "doughnut",
+          ["Approved", "Pending"],
+          [data.approved_users || 0, data.pending_users || 0],
+          ["#16A34A", "#CA8A04"],
+        );
+
+        // Docs by Type Bar
+        const types = data.docs_by_type || [];
+        buildChart(
+          "docTypeChart",
+          "bar",
+          types.map((t) => t.type),
+          types.map((t) => t.count),
+          CHART_COLORS,
+        );
+
+        // Docs by Location
+        const dlocs = data.docs_by_location || [];
+        buildChart(
+          "docLocChart",
+          "bar",
+          dlocs.map((l) => l.location),
+          dlocs.map((l) => l.count),
+          CHART_COLORS,
+        );
+
+        // Users by Location
+        const ulocs = data.users_by_location || [];
+        buildChart(
+          "userLocChart",
+          "bar",
+          ulocs.map((l) => l.location),
+          ulocs.map((l) => l.count),
+          CHART_COLORS,
+        );
+      }
+
+      function buildChart(id, type, labels, values, colors) {
+        if (charts[id]) charts[id].destroy();
+        const ctx = document.getElementById(id)?.getContext("2d");
+        if (!ctx) return;
+
+        const isBar = type === "bar";
+        const backgroundColors = isBar
+          ? values.map((_, i) => colors[i % colors.length] + "90")
+          : colors;
+        const borderColors = isBar
+          ? values.map((_, i) => colors[i % colors.length])
+          : colors;
+
+        charts[id] = new Chart(ctx, {
+          type,
+          data: {
+            labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 2,
+                borderRadius: isBar ? 6 : 0,
+                hoverOffset: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: {
+                  color: "#475569",
+                  font: { family: "Plus Jakarta Sans", size: 11 },
+                  padding: 12,
+                },
+              },
+            },
+            scales: isBar
+              ? {
+                  y: {
+                    ticks: {
+                      color: "#94A3B8",
+                      font: { family: "Plus Jakarta Sans" },
+                    },
+                    grid: { color: "#F1F5F9" },
+                  },
+                  x: {
+                    ticks: {
+                      color: "#94A3B8",
+                      font: { family: "Plus Jakarta Sans", size: 10 },
+                      maxRotation: 40,
+                    },
+                    grid: { display: false },
+                  },
+                }
+              : undefined,
+          },
+        });
+      }
+
+      // ===== PENDING COUNT =====
+      async function loadPendingCount() {
+        try {
+          const res = await fetch(
+            `${BASE_URL}/admin/pending-users?per_page=1`,
+            { headers: authHeaders() },
+          );
+          const data = await res.json();
+          document.getElementById("pendingBadge").textContent =
+            data.pagination?.total || 0;
+        } catch (e) {}
+      }
+
+      // ===== PENDING USERS =====
+      async function loadPending(page) {
+        const wrap = document.getElementById("pendingTableWrap");
+        wrap.innerHTML = `<div class="loading-center"><div class="spinner"></div> Loading...</div>`;
+
+        try {
+          const res = await fetch(
+            `${BASE_URL}/admin/pending-users?page=${page}&per_page=10`,
+            { headers: authHeaders() },
+          );
+          if (res.status === 401) {
+            logout();
+            return;
+          }
+          const data = await res.json();
+          const users = data.users || [];
+          const pag = data.pagination || {};
+
+          if (users.length === 0) {
+            wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">No pending approvals</div></div>`;
+            document.getElementById("pendingPagination").innerHTML = "";
+            return;
+          }
+
+          wrap.innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Username</th><th>Email</th>
+          <th>Location</th><th>Role</th><th>Joined</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${users
+            .map(
+              (u, i) => `
+            <tr>
+              <td style="color:var(--gray-400)">${(page - 1) * 10 + i + 1}</td>
+              <td><strong>${esc(u.username)}</strong></td>
+              <td style="color:var(--gray-500)">${esc(u.email || "—")}</td>
+              <td>📍 ${esc(u.location)}</td>
+              <td><span class="badge badge-user">👤 User</span></td>
+              <td style="color:var(--gray-400);font-size:0.8rem">${u.created_at ? u.created_at.slice(0, 10) : "—"}</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn btn-sm btn-green" onclick="approveUser(${u.id})">✅ Approve</button>
+                  <button class="btn btn-sm btn-red" onclick="deleteUser(${u.id})">🗑 Reject</button>
+                </div>
+              </td>
+            </tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>`;
+
+          document.getElementById("pendingPagination").innerHTML =
+            buildPagination(pag, "loadPending");
+        } catch (e) {
+          wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Failed to load</div></div>`;
+        }
+      }
+
+      // ===== ALL USERS =====
+      function debounceUserSearch() {
+        clearTimeout(userSearchTimer);
+        userSearchTimer = setTimeout(() => loadAllUsers(1), 400);
+      }
+
+      async function loadAllUsers(page) {
+        const wrap = document.getElementById("allUsersWrap");
+        wrap.innerHTML = `<div class="loading-center"><div class="spinner"></div> Loading...</div>`;
+
+        const search = document.getElementById("userSearch")?.value || "";
+        const location = document.getElementById("userLocFilter")?.value || "";
+        const role = document.getElementById("userRoleFilter")?.value || "";
+
+        try {
+          const params = new URLSearchParams({ page, per_page: 10 });
+          if (search) params.append("search", search);
+          if (location) params.append("location", location);
+          if (role) params.append("role", role);
+
+          const res = await fetch(`${BASE_URL}/admin/all-users?${params}`, {
+            headers: authHeaders(),
+          });
+          if (res.status === 401) {
+            logout();
+            return;
+          }
+          const data = await res.json();
+          const users = data.users || [];
+          const pag = data.pagination || {};
+
+          if (users.length === 0) {
+            wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-text">No users found</div></div>`;
+            document.getElementById("allUsersPagination").innerHTML = "";
+            return;
+          }
+
+          wrap.innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Username</th><th>Email</th>
+          <th>Location</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${users
+            .map(
+              (u, i) => `
+            <tr>
+              <td style="color:var(--gray-400)">${(page - 1) * 10 + i + 1}</td>
+              <td><strong>${esc(u.username)}</strong></td>
+              <td style="color:var(--gray-500);font-size:0.82rem">${esc(u.email || "—")}</td>
+              <td>📍 ${esc(u.location)}</td>
+              <td>${roleBadge(u.role)}</td>
+              <td>${
+                u.is_approved
+                  ? '<span class="badge badge-approved">✅ Active</span>'
+                  : '<span class="badge badge-pending">⏳ Pending</span>'
+              }</td>
+              <td style="color:var(--gray-400);font-size:0.78rem">${u.created_at ? u.created_at.slice(0, 10) : "—"}</td>
+              <td>
+                <div class="actions-cell">
+                  ${!u.is_approved ? `<button class="btn btn-sm btn-green" onclick="approveUser(${u.id})">✅ Approve</button>` : ""}
+                  ${u.is_approved ? `<button class="btn btn-sm btn-yellow" onclick="toggleApproval(${u.id})">🚫 Suspend</button>` : ""}
+                  ${u.role === "user" && currentUser.role === "admin" ? `<button class="btn btn-sm btn-purple" onclick="makeSubadmin(${u.id})">⭐ Subadmin</button>` : ""}
+                  ${u.role === "subadmin" && currentUser.role === "admin" ? `<button class="btn btn-sm btn-outline" onclick="revokeSubadmin(${u.id})">↩ Revoke</button>` : ""}
+                  ${u.role !== "admin" ? `<button class="btn btn-sm btn-red" onclick="deleteUser(${u.id})">🗑</button>` : ""}
+                </div>
+              </td>
+            </tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>`;
+
+          document.getElementById("allUsersPagination").innerHTML =
+            buildPagination(pag, "loadAllUsers");
+        } catch (e) {
+          wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Failed to load</div></div>`;
+        }
+      }
+
+      function roleBadge(role) {
+        if (role === "admin")
+          return '<span class="badge badge-admin">🛡 Admin</span>';
+        if (role === "subadmin")
+          return '<span class="badge badge-subadmin">⭐ Subadmin</span>';
+        return '<span class="badge badge-user">👤 User</span>';
+      }
+
+      // ===== DOCUMENTS =====
+      async function loadDocTypes() {
+        try {
+          const res = await fetch(`${BASE_URL}/document/types`);
+          const data = await res.json();
+          const sel = document.getElementById("docTypeFilter");
+          const firstOpt = sel.options[0];
+          sel.innerHTML = "";
+          sel.appendChild(firstOpt);
+          (data.types || []).forEach((t) => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = t;
+            sel.appendChild(opt);
+          });
+        } catch (e) {}
+      }
+
+      async function loadDocs(page) {
+        const wrap = document.getElementById("docsWrap");
+        wrap.innerHTML = `<div class="loading-center"><div class="spinner"></div> Loading...</div>`;
+
+        const docType = document.getElementById("docTypeFilter")?.value || "";
+        const location = document.getElementById("docLocFilter")?.value || "";
+
+        try {
+          const params = new URLSearchParams({ page, per_page: 10 });
+          if (docType) params.append("doc_type", docType);
+          if (location) params.append("location", location);
+
+          const res = await fetch(`${BASE_URL}/document/all?${params}`, {
+            headers: authHeaders(),
+          });
+          if (res.status === 401) {
+            logout();
+            return;
+          }
+          const data = await res.json();
+          const docs = data.results || [];
+          const pag = data.pagination || {};
+
+          if (docs.length === 0) {
+            wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No documents found</div></div>`;
+            document.getElementById("docsPagination").innerHTML = "";
+            return;
+          }
+
+          wrap.innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Part No</th><th>Unique ID</th><th>Type</th>
+          <th>Location</th><th>Uploaded By</th><th>Date</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${docs
+            .map(
+              (d, i) => `
+            <tr>
+              <td style="color:var(--gray-400)">${(page - 1) * 10 + i + 1}</td>
+              <td><strong>${esc(d.part_no)}</strong></td>
+              <td>${esc(d.unique_id)}</td>
+              <td><span class="badge badge-doc">${esc(d.doc_type)}</span></td>
+              <td>📍 ${esc(d.location)}</td>
+              <td style="color:var(--gray-500)">${esc(d.uploaded_by || "—")}</td>
+              <td style="color:var(--gray-400);font-size:0.8rem">${d.uploaded_at ? d.uploaded_at.slice(0, 10) : "—"}</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn btn-sm btn-green" onclick="doDownload(${d.id}, '${esc(d.original_name || d.filename)}')">⬇</button>
+                  <button class="btn btn-sm btn-red" onclick="doDeleteDoc(${d.id})">🗑</button>
+                </div>
+              </td>
+            </tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>`;
+
+          document.getElementById("docsPagination").innerHTML = buildPagination(
+            pag,
+            "loadDocs",
+          );
+        } catch (e) {
+          wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Failed to load</div></div>`;
+        }
+      }
+
+      // ===== PAGINATION BUILDER =====
+      function buildPagination(p, fn) {
+        if (!p || p.total_pages <= 1) return "";
+        const { page, total_pages, total, per_page } = p;
+        let html = `<div class="pagination">
+    <button class="page-btn" onclick="${fn}(${page - 1})" ${page <= 1 ? "disabled" : ""}>‹</button>`;
+
+        const start = Math.max(1, page - 2),
+          end = Math.min(total_pages, page + 2);
+        if (start > 1)
+          html += `<button class="page-btn" onclick="${fn}(1)">1</button>${start > 2 ? '<span class="page-info-text">…</span>' : ""}`;
+        for (let i = start; i <= end; i++) {
+          html += `<button class="page-btn ${i === page ? "active" : ""}" onclick="${fn}(${i})">${i}</button>`;
+        }
+        if (end < total_pages)
+          html += `${end < total_pages - 1 ? '<span class="page-info-text">…</span>' : ""}<button class="page-btn" onclick="${fn}(${total_pages})">${total_pages}</button>`;
+        html += `<button class="page-btn" onclick="${fn}(${page + 1})" ${page >= total_pages ? "disabled" : ""}>›</button>
+    <span class="page-info-text">${(page - 1) * per_page + 1}–${Math.min(page * per_page, total)} of ${total}</span>
+  </div>`;
+        return html;
+      }
+
+      // ===== USER ACTIONS =====
+      async function approveUser(id) {
+        try {
+          const res = await fetch(`${BASE_URL}/admin/approve/${id}`, {
+            method: "PUT",
+            headers: authHeaders(),
+          });
+          const data = await res.json();
+          toast(data.msg || "Approved", res.ok ? "success" : "error");
+          if (res.ok) {
+            loadPending(1);
+            loadAllUsers(1);
+            loadPendingCount();
+            if (charts.userChart) loadDashboard();
+          }
+        } catch (e) {
+          toast("Action failed", "error");
+        }
+      }
+
+      async function deleteUser(id) {
+        if (!confirm("Are you sure you want to delete this user?")) return;
+        try {
+          const res = await fetch(`${BASE_URL}/admin/delete-user/${id}`, {
+            method: "DELETE",
+            headers: authHeaders(),
+          });
+          const data = await res.json();
+          toast(data.msg || "Deleted", res.ok ? "success" : "error");
+          if (res.ok) {
+            loadPending(1);
+            loadAllUsers(1);
+            loadPendingCount();
+          }
+        } catch (e) {
+          toast("Delete failed", "error");
+        }
+      }
+
+      async function toggleApproval(id) {
+        try {
+          const res = await fetch(`${BASE_URL}/admin/toggle-approval/${id}`, {
+            method: "PUT",
+            headers: authHeaders(),
+          });
+          const data = await res.json();
+          toast(data.msg || "Updated", res.ok ? "success" : "error");
+          if (res.ok) loadAllUsers(1);
+        } catch (e) {
+          toast("Action failed", "error");
+        }
+      }
+
+      async function makeSubadmin(id) {
+        if (!confirm("Promote this user to Subadmin?")) return;
+        try {
+          const res = await fetch(`${BASE_URL}/admin/make-subadmin/${id}`, {
+            method: "PUT",
+            headers: authHeaders(),
+          });
+          const data = await res.json();
+          toast(data.msg || "Promoted", res.ok ? "success" : "error");
+          if (res.ok) loadAllUsers(1);
+        } catch (e) {
+          toast("Action failed", "error");
+        }
+      }
+
+      async function revokeSubadmin(id) {
+        if (!confirm("Revoke subadmin role?")) return;
+        try {
+          const res = await fetch(`${BASE_URL}/admin/revoke-subadmin/${id}`, {
+            method: "PUT",
+            headers: authHeaders(),
+          });
+          const data = await res.json();
+          toast(data.msg || "Revoked", res.ok ? "success" : "error");
+          if (res.ok) loadAllUsers(1);
+        } catch (e) {
+          toast("Action failed", "error");
+        }
+      }
+
+      // ===== DOCUMENT ACTIONS =====
+      async function doDownload(id, filename) {
+        try {
+          const res = await fetch(`${BASE_URL}/document/download/${id}`, {
+            headers: { Authorization: "Bearer " + token() },
+          });
+          if (!res.ok) {
+            toast("Download failed", "error");
+            return;
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename || "document";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          toast("Download error", "error");
+        }
+      }
+
+      async function doDeleteDoc(id) {
+        if (!confirm("Delete this document?")) return;
+        try {
+          const res = await fetch(`${BASE_URL}/document/delete/${id}`, {
+            method: "DELETE",
+            headers: authHeaders(),
+          });
+          const data = await res.json();
+          toast(data.msg || "Deleted", res.ok ? "success" : "error");
+          if (res.ok) loadDocs(1);
+        } catch (e) {
+          toast("Delete failed", "error");
+        }
+      }
+
+      function esc(s) {
+        if (!s) return "";
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location = "index.html";
+      }
+    </script>
+  </body>
+</html>
