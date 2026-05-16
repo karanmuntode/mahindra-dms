@@ -70,6 +70,33 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+@app.route('/reset-admin')
+def reset_admin():
+    from models import User
+    from werkzeug.security import generate_password_hash
+    admin = User.query.filter_by(username='admin').first()
+    if admin:
+        admin.password = generate_password_hash('Admin@1234')
+        admin.is_approved = True
+        admin.is_admin = True
+        admin.role = 'admin'
+        db.session.commit()
+        return {"msg": "Admin password reset to Admin@1234"}
+    else:
+        admin = User(
+            username='admin',
+            password=generate_password_hash('Admin@1234'),
+            email='admin@mahindra.com',
+            role='admin',
+            location='Nashik Plant 1',
+            is_admin=True,
+            is_approved=True,
+            otp_verified=True
+        )
+        db.session.add(admin)
+        db.session.commit()
+        return {"msg": "Admin created with password Admin@1234"}
+        
 # ============== RUN ======================
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
