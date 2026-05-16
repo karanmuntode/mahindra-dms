@@ -174,8 +174,8 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    # if not user.is_approved:
-    #     return jsonify({"error": "Account pending admin approval"}), 403
+    if not user.is_approved:
+        return jsonify({"error": "Account pending admin approval"}), 403
 
     access_token = create_access_token(
         identity=user.username,
