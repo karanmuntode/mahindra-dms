@@ -30,7 +30,7 @@ def send_otp_email(to_email: str, otp: str):
 
         msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
             server.sendmail(SMTP_USER, to_email, msg.as_string())

@@ -44,8 +44,23 @@ def home():
 # ============ CREATE DB ==================
 with app.app_context():
     db.create_all()
-    
-from create_admin import *
+    # Auto create admin if not exists
+    from models import User
+    from werkzeug.security import generate_password_hash
+    if not User.query.filter_by(username='admin').first():
+        admin = User(
+            username='admin',
+            password=generate_password_hash('Admin@1234'),
+            email='admin@mahindra.com',
+            role='admin',
+            location='Nashik Plant 1',
+            is_admin=True,
+            is_approved=True,
+            otp_verified=True
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Admin created on Railway!")
 
 # ============ LOGGING ====================
 os.makedirs("logs", exist_ok=True)
