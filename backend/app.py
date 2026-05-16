@@ -44,6 +44,8 @@ def home():
 # ============ CREATE DB ==================
 with app.app_context():
     db.create_all()
+    
+from create_admin import *
 
 # ============ LOGGING ====================
 os.makedirs("logs", exist_ok=True)
