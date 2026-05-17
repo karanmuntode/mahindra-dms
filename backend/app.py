@@ -26,8 +26,11 @@ if raw_url.startswith("postgres://"):
     raw_url = raw_url.replace("postgres://", "postgresql+pg8000://", 1)
 elif raw_url.startswith("postgresql://"):
     raw_url = raw_url.replace("postgresql://", "postgresql+pg8000://", 1)
+# Remove sslmode from URL — pg8000 handles SSL differently
+if "?sslmode=" in raw_url:
+    raw_url = raw_url.split("?sslmode=")[0]
 app.config['SQLALCHEMY_DATABASE_URI'] = raw_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"ssl_context": True}}
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=8)
 app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024  # 25MB
 
