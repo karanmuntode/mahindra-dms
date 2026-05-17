@@ -24,11 +24,14 @@ limiter.init_app(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'change-this-in-production')
 
 # DATABASE (safe for PythonAnywhere + local)
-raw_url = os.getenv('DATABASE_URL')
-
-if not raw_url:
-    raw_url = 'sqlite:///database.db'
-
+raw_url = os.getenv('DATABASE_URL', 'sqlite:///database.db')
+if raw_url.startswith("postgres://"):
+    raw_url = raw_url.replace("postgres://", "postgresql+pg8000://", 1)
+elif raw_url.startswith("postgresql://"):
+    raw_url = raw_url.replace("postgresql://", "postgresql+pg8000://", 1)
+# Remove sslmode parameter
+if "?sslmode=" in raw_url:
+    raw_url = raw_url.split("?sslmode=")[0]
 app.config['SQLALCHEMY_DATABASE_URI'] = raw_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
