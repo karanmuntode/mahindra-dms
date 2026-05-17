@@ -21,6 +21,7 @@ limiter.init_app(app)
 # ================= CONFIG =================
 import os
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'change-this-in-production')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 raw_url = os.getenv('DATABASE_URL', 'sqlite:///database.db')
 if raw_url.startswith("postgres://"):
     raw_url = raw_url.replace("postgres://", "postgresql+pg8000://", 1)
@@ -30,7 +31,8 @@ elif raw_url.startswith("postgresql://"):
 if "?sslmode=" in raw_url:
     raw_url = raw_url.split("?sslmode=")[0]
 app.config['SQLALCHEMY_DATABASE_URI'] = raw_url
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"ssl_context": True}}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=8)
 app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024  # 25MB
 
