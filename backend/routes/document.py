@@ -3,8 +3,16 @@ from models import db, Document, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 import os, uuid, logging
+import cloudinary
+import cloudinary.uploader
 
 doc_bp = Blueprint('document', __name__)
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'docx', 'xlsx'}
@@ -86,16 +94,21 @@ def upload():
         if existing:
             return jsonify({"msg": "Document with same Part No, Unique ID, Type, and Location already exists"}), 409
 
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         original_name = secure_filename(file.filename)
         unique_name = f"{uuid.uuid4()}_{original_name}"
-        file_path = os.path.join(UPLOAD_FOLDER, unique_name)
-        file.save(file_path)
+
+        upload_result = cloudinary.uploader.upload(
+            file,
+            public_id=unique_name,
+            resource_type="auto"
+        )
+
+        file_url = upload_result["secure_url"]
 
         doc = Document(
             part_no=part_no,
             unique_id=unique_id,
-            filename=unique_name,
+            filename=file_url,
             original_name=original_name,
             location=user.location,
             doc_type=doc_type,
@@ -253,9 +266,11 @@ def delete(id):
         if not user.is_admin and doc.location != user.location:
             return jsonify({"msg": "Unauthorized"}), 403
 
-        file_path = os.path.join(UPLOAD_FOLDER, doc.filename)
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        try:
+            public_id = doc.filename.split("/")[-1].split(".")[0]
+            cloudinary.uploader.destroy(public_id, resource_type="raw")
+        except:
+             pass
 
         db.session.delete(doc)
         db.session.commit()
@@ -280,12 +295,9 @@ def download(id):
         if not user.is_admin and doc.location != user.location:
             return jsonify({"msg": "Unauthorized"}), 403
 
-        return send_from_directory(
-            UPLOAD_FOLDER,
-            doc.filename,
-            as_attachment=True,
-            download_name=doc.original_name or doc.filename
-        )
+        return jsonify({
+           "download_url": doc.filename
+        }), 200
 
     except Exception as e:
         return jsonify({"msg": "Download failed", "error": str(e)}), 500

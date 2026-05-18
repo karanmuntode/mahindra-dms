@@ -39,6 +39,7 @@ class Document(db.Model):
     doc_type = db.Column(db.String(100), nullable=False, default='SOP')  # NEW: document type
     uploaded_by = db.Column(db.String(100), nullable=True)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    file_url = db.Column(db.String(500), nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint('part_no', 'unique_id', 'location', 'doc_type', name='unique_doc_per_location_type'),

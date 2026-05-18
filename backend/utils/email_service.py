@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -37,7 +40,7 @@ def send_otp_email(to_email: str, otp: str):
 
         print(f"OTP sent to {to_email}")
     except Exception as e:
-        pass
+        print("EMAIL ERROR:", str(e))
         # Don't raise — allow signup to proceed even if email fails
 
 
@@ -46,3 +49,4 @@ def send_otp(email: str) -> str:
     otp = str(random.randint(100000, 999999))
     send_otp_email(email, otp)
     return otp
+
