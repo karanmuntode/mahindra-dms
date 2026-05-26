@@ -71,7 +71,8 @@ import random
 import requests
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-print("BREVO_API_KEY =", BREVO_API_KEY)
+
+print("BREVO KEY =", BREVO_API_KEY)
 
 
 def send_otp_email(to_email: str, otp: str):
@@ -79,8 +80,8 @@ def send_otp_email(to_email: str, otp: str):
         url = "https://api.brevo.com/v3/smtp/email"
 
         headers = {
+            "api-key": str(BREVO_API_KEY),
             "accept": "application/json",
-            "api-key": BREVO_API_KEY,
             "content-type": "application/json"
         }
 
@@ -94,22 +95,16 @@ def send_otp_email(to_email: str, otp: str):
                     "email": to_email
                 }
             ],
-            "subject": "Mahindra DMS - OTP Verification",
+            "subject": "Mahindra DMS OTP Verification",
+
             "htmlContent": f"""
             <html>
-            <body style="font-family:Arial;padding:20px">
-                <h2>Mahindra DMS OTP</h2>
+            <body>
+                <h2>Mahindra DMS</h2>
+
                 <p>Your OTP is:</p>
 
-                <div style="
-                    font-size:32px;
-                    font-weight:bold;
-                    letter-spacing:6px;
-                    color:#1565C0;
-                    margin:20px 0;
-                ">
-                    {otp}
-                </div>
+                <h1>{otp}</h1>
 
                 <p>Valid for 10 minutes.</p>
             </body>
@@ -120,16 +115,20 @@ def send_otp_email(to_email: str, otp: str):
         response = requests.post(
             url,
             json=payload,
-            headers=headers
+            headers=headers,
+            timeout=20
         )
 
-        print("BREVO RESPONSE:", response.text)
+        print("STATUS CODE =", response.status_code)
+        print("BREVO RESPONSE =", response.text)
 
     except Exception as e:
         print("EMAIL ERROR:", str(e))
 
 
-def send_otp(email: str) -> str:
+def send_otp(email: str):
     otp = str(random.randint(100000, 999999))
+
     send_otp_email(email, otp)
+
     return otp
