@@ -71,6 +71,7 @@ import random
 import requests
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+print("BREVO_API_KEY =", BREVO_API_KEY)
 
 
 def send_otp_email(to_email: str, otp: str):
