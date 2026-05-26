@@ -31,18 +31,41 @@ class User(db.Model):
 
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     part_no = db.Column(db.String(100), nullable=False)
     unique_id = db.Column(db.String(100), nullable=False)
-    filename = db.Column(db.String(200), nullable=False)
+
+    # Cloudinary public_id
+    filename = db.Column(db.String(300), nullable=True)
+
+    # Cloudinary secure URL
+    file_url = db.Column(db.String(500), nullable=False)
+
     original_name = db.Column(db.String(200), nullable=True)
+
     location = db.Column(db.String(100), nullable=False)
-    doc_type = db.Column(db.String(100), nullable=False, default='SOP')  # NEW: document type
+
+    doc_type = db.Column(
+        db.String(100),
+        nullable=False,
+        default='SOP'
+    )
+
     uploaded_by = db.Column(db.String(100), nullable=True)
-    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
-    file_url = db.Column(db.String(500), nullable=True)
+
+    uploaded_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
 
     __table_args__ = (
-        db.UniqueConstraint('part_no', 'unique_id', 'location', 'doc_type', name='unique_doc_per_location_type'),
+        db.UniqueConstraint(
+            'part_no',
+            'unique_id',
+            'location',
+            'doc_type',
+            name='unique_doc_per_location_type'
+        ),
     )
 
     def to_dict(self):
@@ -51,6 +74,7 @@ class Document(db.Model):
             "part_no": self.part_no,
             "unique_id": self.unique_id,
             "filename": self.filename,
+            "file_url": self.file_url,
             "original_name": self.original_name,
             "location": self.location,
             "doc_type": self.doc_type,
