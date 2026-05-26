@@ -19,16 +19,16 @@
 #         msg["To"] = to_email
 
 #         html = f"""
-#         <html><body style="font-family:Arial;background:#f0f4f8;padding:30px">
-#           <div style="max-width:480px;margin:auto;background:white;border-radius:12px;padding:32px;box-shadow:0 4px 20px rgba(0,100,200,0.1)">
-#             <h2 style="color:#1565C0;margin-bottom:8px">Mahindra Document Management</h2>
-#             <p style="color:#555">Your One-Time Password (OTP) for email verification:</p>
-#             <div style="background:#E3F2FD;border-radius:8px;padding:20px;text-align:center;margin:20px 0">
-#               <span style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#1565C0">{otp}</span>
-#             </div>
-#             <p style="color:#888;font-size:13px">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
-#           </div>
-#         </body></html>
+        # <html><body style="font-family:Arial;background:#f0f4f8;padding:30px">
+        #   <div style="max-width:480px;margin:auto;background:white;border-radius:12px;padding:32px;box-shadow:0 4px 20px rgba(0,100,200,0.1)">
+        #     <h2 style="color:#1565C0;margin-bottom:8px">Mahindra Document Management</h2>
+        #     <p style="color:#555">Your One-Time Password (OTP) for email verification:</p>
+        #     <div style="background:#E3F2FD;border-radius:8px;padding:20px;text-align:center;margin:20px 0">
+        #       <span style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#1565C0">{otp}</span>
+        #     </div>
+        #     <p style="color:#888;font-size:13px">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
+        #   </div>
+        # </body></html>
 #         """
 
 #         msg.attach(MIMEText(html, "html"))
@@ -72,7 +72,7 @@ import requests
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
-print("BREVO KEY =", BREVO_API_KEY)
+
 
 
 def send_otp_email(to_email: str, otp: str):
@@ -99,15 +99,16 @@ def send_otp_email(to_email: str, otp: str):
 
             "htmlContent": f"""
             <html>
-            <body>
-                <h2>Mahindra DMS</h2>
-
-                <p>Your OTP is:</p>
-
-                <h1>{otp}</h1>
-
-                <p>Valid for 10 minutes.</p>
-            </body>
+            <body style="font-family:Arial;background:#f0f4f8;padding:30px">
+          <div style="max-width:480px;margin:auto;background:white;border-radius:12px;padding:32px;box-shadow:0 4px 20px rgba(0,100,200,0.1)">
+            <h2 style="color:#1565C0;margin-bottom:8px">Mahindra Document Management</h2>
+            <p style="color:#555">Your One-Time Password (OTP) for email verification:</p>
+            <div style="background:#E3F2FD;border-radius:8px;padding:20px;text-align:center;margin:20px 0">
+              <span style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#1565C0">{otp}</span>
+            </div>
+            <p style="color:#888;font-size:13px">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
+          </div>
+        </body>
             </html>
             """
         }
