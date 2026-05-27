@@ -134,7 +134,7 @@ def upload():
         unique_name = f"{uuid.uuid4().hex}_{name}"
 
         upload_result = cloudinary.uploader.upload_large(
-            file,
+            file.stream,
             public_id=unique_name,
             resource_type="raw",
             format=ext.replace(".", "")
