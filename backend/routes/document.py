@@ -122,7 +122,7 @@ def upload():
         upload_result = cloudinary.uploader.upload(
             file,
             public_id=unique_name,
-            resource_type="auto",
+            resource_type="raw",
             use_filename=True,
             unique_filename=False
             type="upload",
