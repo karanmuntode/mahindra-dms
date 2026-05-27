@@ -804,16 +804,19 @@
       return;
     }
 
-    // Backend now returns JSON with Cloudinary URL
-    const data = await res.json();
+    const blob = await res.blob();
 
-    if (!data.download_url) {
-      alert("Invalid download URL");
-      return;
-    }
+    const url = window.URL.createObjectURL(blob);
 
-    // Open Cloudinary file directly
-    window.open(data.download_url, "_blank");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "document";
+
+    document.body.appendChild(a);
+    a.click();
+
+    a.remove();
+    window.URL.revokeObjectURL(url);
 
   } catch (e) {
     console.error(e);
