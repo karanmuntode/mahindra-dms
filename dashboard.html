@@ -94,7 +94,7 @@
       /* SEARCH AUTOCOMPLETE */
       .search-wrapper { position: relative; }
       .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--white); border: 1.5px solid var(--blue-200); border-radius: 9px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); z-index: 100; max-height: 200px; overflow-y: auto; display: none; }
-      .autocomplete-item { padding: 10px 14px; cursor: pointer; font-size: 0.875rem; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
+      .autocomplete-item { padding: 10px 14px; cursor: pointer; font-size: 0.875rem; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); transition: backgrou,nd 0.1s; }
       .autocomplete-item:last-child { border-bottom: none; }
       .autocomplete-item:hover { background: var(--blue-50); color: var(--blue-700); }
       .autocomplete-item .match { font-weight: 700; color: var(--blue-600); }
@@ -792,7 +792,6 @@
       }
 
       async function doDownload(id, filename) {
-<<<<<<< HEAD
         try {
           const res = await fetch(`${BASE_URL}/document/download/${id}`, {
             headers: {
@@ -823,41 +822,7 @@
           console.error(e);
           alert("Download error");
         }
-=======
-  try {
-    const res = await fetch(`${BASE_URL}/document/download/${id}`, {
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
-      },
-    });
-
-    if (!res.ok) {
-      alert("Download failed");
-      return;
-    }
-
-    const blob = await res.blob();
-
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename || "document";
-
-    document.body.appendChild(a);
-    a.click();
-
-    a.remove();
-
-    window.URL.revokeObjectURL(url);
-
-  } catch (e) {
-    console.error(e);
-    alert("Download error");
-  }
->>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
       }
-
       async function doDelete(id) {
         if (!confirm("Are you sure you want to delete this document?")) return;
         try {
