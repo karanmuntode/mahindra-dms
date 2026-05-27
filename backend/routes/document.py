@@ -5,6 +5,9 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_
 from flask import Response
 import requests
+from flask import send_file
+import io
+
 
 
 import os
@@ -413,26 +416,25 @@ def download(id):
         if not user.is_admin and doc.location != user.location:
             return jsonify({"msg": "Unauthorized"}), 403
 
-        cloudinary_response = requests.get(
-            doc.file_url,
-            stream=True
-        )
+        # Fetch file from Cloudinary
+        response = requests.get(doc.file_url)
 
-        if cloudinary_response.status_code != 200:
+        if response.status_code != 200:
             return jsonify({
                 "msg": "Failed to fetch file"
             }), 500
 
-        return Response(
-            cloudinary_response.iter_content(chunk_size=8192),
-            content_type=cloudinary_response.headers.get(
+        # Convert binary content into memory file
+        file_stream = io.BytesIO(response.content)
+
+        return send_file(
+            file_stream,
+            as_attachment=True,
+            download_name=doc.original_name,
+            mimetype=response.headers.get(
                 "Content-Type",
                 "application/octet-stream"
-            ),
-            headers={
-                "Content-Disposition":
-                f'attachment; filename="{doc.original_name}"'
-            }
+            )
         )
 
     except Exception as e:
