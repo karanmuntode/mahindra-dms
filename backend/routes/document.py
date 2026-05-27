@@ -3,6 +3,9 @@ from models import db, Document, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
+from flask import Response
+
+
 
 import os
 import uuid
@@ -396,6 +399,7 @@ def delete(id):
 
 
 # ================= DOWNLOAD =================
+
 @doc_bp.route('/download/<int:id>', methods=['GET'])
 @jwt_required()
 def download(id):
@@ -409,9 +413,31 @@ def download(id):
         if not user.is_admin and doc.location != user.location:
             return jsonify({"msg": "Unauthorized"}), 403
 
-        return jsonify({
-            "download_url": doc.file_url
-        }), 200
+        # Fetch file from Cloudinary
+        cloudinary_response = requests.get(
+            doc.file_url,
+            stream=True
+        )
+
+        if cloudinary_response.status_code != 200:
+            return jsonify({
+                "msg": "Failed to fetch file"
+            }), 500
+
+        return Response(
+            cloudinary_response.iter_content(chunk_size=8192),
+            content_type=cloudinary_response.headers.get(
+                "Content-Type",
+                "application/octet-stream"
+            ),
+            headers={
+                "Content-Disposition":
+                f'attachment; filename="{doc.original_name}"'
+            }
+        )
 
     except Exception as e:
-        return jsonify({"msg": "Download failed", "error": str(e)}), 500
+        return jsonify({
+            "msg": "Download failed",
+            "error": str(e)
+        }), 500
