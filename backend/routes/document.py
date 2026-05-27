@@ -100,6 +100,38 @@ def upload():
 
         if not part_no or not unique_id:
             return jsonify({
+# ================= UPLOAD =================
+@doc_bp.route('/upload', methods=['POST'])
+@jwt_required()
+def upload():
+    try:
+        user = get_current_user()
+
+        if not user:
+            return jsonify({"msg": "Invalid user / token"}), 401
+
+        if not user.is_approved:
+            return jsonify({"msg": "Access denied — account not approved"}), 403
+
+        if 'file' not in request.files:
+            return jsonify({"msg": "No file provided"}), 400
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({"msg": "No file selected"}), 400
+
+        if not allowed_file(file.filename):
+            return jsonify({
+                "msg": f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+            }), 400
+
+        part_no = request.form.get('part_no', '').strip()
+        unique_id = request.form.get('unique_id', '').strip()
+        doc_type = request.form.get('doc_type', '').strip()
+
+        if not part_no or not unique_id:
+            return jsonify({
                 "msg": "Part No and Unique ID are required"
             }), 400
 
@@ -122,42 +154,75 @@ def upload():
             }), 409
 
         # ================= CLOUDINARY UPLOAD =================
-        # ================= CLOUDINARY UPLOAD =================
-           original_name = secure_filename(file.filename)
 
-# remove spaces completely
-           original_name = original_name.replace(" ", "_")
+        original_name = secure_filename(file.filename)
 
-# remove special chars
-           original_name = original_name.replace("(", "")
-           original_name = original_name.replace(")", "")
-           original_name = original_name.replace("&", "_")
-           original_name = original_name.replace("#", "_")
+        # remove spaces
+        original_name = original_name.replace(" ", "_")
 
-# split extension
-           name, ext = os.path.splitext(original_name)
+        # remove special chars
+        original_name = original_name.replace("(", "")
+        original_name = original_name.replace(")", "")
+        original_name = original_name.replace("&", "_")
+        original_name = original_name.replace("#", "_")
 
-# FINAL SAFE PUBLIC ID
-           unique_name = f"{uuid.uuid4().hex}_{name}"
+        # split extension
+        name, ext = os.path.splitext(original_name)
 
-           upload_result = cloudinary.uploader.upload_large(
-               file.stream,
-               public_id=unique_name,
-               resource_type="raw",
-               format=ext.replace(".", "")
-            )
+        # final safe public id
+        unique_name = f"{uuid.uuid4().hex}_{name}"
 
-# IMPORTANT FIX
-            file_url, options = cloudinary.utils.cloudinary_url(
-                unique_name,
-                resource_type="raw",
-                type="upload",
-                secure=True,
-                flags="attachment",
-                format=ext.replace(".", "")
-              )
+        # upload to cloudinary
+        upload_result = cloudinary.uploader.upload_large(
+            file.stream,
+            public_id=unique_name,
+            resource_type="raw",
+            format=ext.replace(".", "")
+        )
 
-               print("FILE URL =", file_url)
+        # generate downloadable URL
+        file_url, options = cloudinary.utils.cloudinary_url(
+            unique_name,
+            resource_type="raw",
+            type="upload",
+            secure=True,
+            flags="attachment",
+            format=ext.replace(".", "")
+        )
+
+        print("FILE URL =", file_url)
+
+        # ================= SAVE TO DB =================
+
+        doc = Document(
+            part_no=part_no,
+            unique_id=unique_id,
+            filename=unique_name,
+            original_name=original_name,
+            file_url=file_url,
+            location=user.location,
+            doc_type=doc_type,
+            uploaded_by=user.username
+        )
+
+        db.session.add(doc)
+        db.session.commit()
+
+        logging.info(f"{user.username} uploaded {unique_name}")
+
+        return jsonify({
+            "msg": "Document uploaded successfully",
+            "doc": doc.to_dict()
+        }), 201
+
+    except Exception as e:
+        print("UPLOAD ERROR:", str(e))
+        logging.error(f"Upload error: {e}")
+
+        return jsonify({
+            "msg": "Upload failed",
+            "error": str(e)
+        }), 500
 
         # ================= SAVE TO DB =================
         doc = Document(
