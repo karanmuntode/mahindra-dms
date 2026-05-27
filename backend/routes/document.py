@@ -3,6 +3,12 @@ from models import db, Document, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
+from flask import Response
+import requests
+from flask import send_file
+import io
+
+
 
 import requests
 import io
@@ -134,15 +140,27 @@ def upload():
                 "msg": "Document already exists for this Part No, Unique ID, Type and Location"
             }), 409
 
+<<<<<<< HEAD
         # ================= CLEAN FILE NAME =================
         original_name = secure_filename(file.filename)
 
         original_name = original_name.replace(" ", "_")
+=======
+        # ================= CLOUDINARY UPLOAD =================
+
+        original_name = secure_filename(file.filename)
+
+        # remove spaces
+        original_name = original_name.replace(" ", "_")
+
+        # remove special chars
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
         original_name = original_name.replace("(", "")
         original_name = original_name.replace(")", "")
         original_name = original_name.replace("&", "_")
         original_name = original_name.replace("#", "_")
 
+<<<<<<< HEAD
         # ================= SPLIT NAME / EXT =================
         name, ext = os.path.splitext(original_name)
 
@@ -152,22 +170,77 @@ def upload():
         unique_name = f"{uuid.uuid4().hex}_{name}"
 
         # ================= CLOUDINARY UPLOAD =================
+=======
+        # split extension
+        name, ext = os.path.splitext(original_name)
+
+        # final safe public id
+        unique_name = f"{uuid.uuid4().hex}_{name}"
+
+        # upload to cloudinary
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
         upload_result = cloudinary.uploader.upload_large(
             file.stream,
             public_id=unique_name,
             resource_type="raw",
+<<<<<<< HEAD
             format=ext
         )
 
         # ================= DOWNLOADABLE CLOUDINARY URL =================
+=======
+            format=ext.replace(".", "")
+        )
+
+        # generate downloadable URL
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
         file_url, options = cloudinary.utils.cloudinary_url(
             unique_name,
             resource_type="raw",
             type="upload",
             secure=True,
             flags="attachment",
+<<<<<<< HEAD
             format=ext
         )
+=======
+            format=ext.replace(".", "")
+        )
+
+        print("FILE URL =", file_url)
+
+        # ================= SAVE TO DB =================
+
+        doc = Document(
+            part_no=part_no,
+            unique_id=unique_id,
+            filename=unique_name,
+            original_name=original_name,
+            file_url=file_url,
+            location=user.location,
+            doc_type=doc_type,
+            uploaded_by=user.username
+        )
+
+        db.session.add(doc)
+        db.session.commit()
+
+        logging.info(f"{user.username} uploaded {unique_name}")
+
+        return jsonify({
+            "msg": "Document uploaded successfully",
+            "doc": doc.to_dict()
+        }), 201
+
+    except Exception as e:
+        print("UPLOAD ERROR:", str(e))
+        logging.error(f"Upload error: {e}")
+
+        return jsonify({
+            "msg": "Upload failed",
+            "error": str(e)
+        }), 500
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
 
         print("FILE URL =", file_url)
 
@@ -376,6 +449,7 @@ def delete(id):
 
 
 # ================= DOWNLOAD =================
+
 @doc_bp.route('/download/<int:id>', methods=['GET'])
 @jwt_required()
 def download(id):
@@ -394,11 +468,16 @@ def download(id):
                 "msg": "Unauthorized"
             }), 403
 
+<<<<<<< HEAD
         # ================= FETCH FROM CLOUDINARY =================
+=======
+        # Fetch file from Cloudinary
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
         response = requests.get(doc.file_url)
 
         if response.status_code != 200:
             return jsonify({
+<<<<<<< HEAD
                 "msg": "Failed to fetch file from Cloudinary"
             }), 500
 
@@ -406,6 +485,14 @@ def download(id):
         file_stream = io.BytesIO(response.content)
 
         # ================= SEND FILE =================
+=======
+                "msg": "Failed to fetch file"
+            }), 500
+
+        # Convert binary content into memory file
+        file_stream = io.BytesIO(response.content)
+
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
         return send_file(
             file_stream,
             as_attachment=True,
@@ -420,4 +507,8 @@ def download(id):
         return jsonify({
             "msg": "Download failed",
             "error": str(e)
+<<<<<<< HEAD
         }), 500
+=======
+        }), 500
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49

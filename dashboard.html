@@ -792,6 +792,7 @@
       }
 
       async function doDownload(id, filename) {
+<<<<<<< HEAD
         try {
           const res = await fetch(`${BASE_URL}/document/download/${id}`, {
             headers: {
@@ -822,6 +823,39 @@
           console.error(e);
           alert("Download error");
         }
+=======
+  try {
+    const res = await fetch(`${BASE_URL}/document/download/${id}`, {
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+      },
+    });
+
+    if (!res.ok) {
+      alert("Download failed");
+      return;
+    }
+
+    const blob = await res.blob();
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "document";
+
+    document.body.appendChild(a);
+    a.click();
+
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+
+  } catch (e) {
+    console.error(e);
+    alert("Download error");
+  }
+>>>>>>> a08607f347da6f02f12946c695ed8dcab3ff6b49
       }
 
       async function doDelete(id) {
