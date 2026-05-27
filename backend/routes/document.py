@@ -152,11 +152,11 @@ def upload():
         unique_name = f"{uuid.uuid4().hex}_{name}"
 
         # ================= CLOUDINARY UPLOAD =================
-        upload_result = cloudinary.uploader.upload_large(
-            file.stream,
+        upload_result = cloudinary.uploader.upload(
+            file,
             public_id=unique_name,
             resource_type="raw",
-            format=ext
+           
         )
 
         # ================= DOWNLOADABLE CLOUDINARY URL =================
