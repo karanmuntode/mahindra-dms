@@ -798,20 +798,28 @@
               Authorization: "Bearer " + localStorage.getItem("token"),
             },
           });
+
           if (!res.ok) {
             alert("Download failed");
             return;
           }
+
           const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
+
+          const url = window.URL.createObjectURL(blob);
+
           const a = document.createElement("a");
           a.href = url;
           a.download = filename || "document";
+
           document.body.appendChild(a);
           a.click();
+
           a.remove();
-          URL.revokeObjectURL(url);
+
+          window.URL.revokeObjectURL(url);
         } catch (e) {
+          console.error(e);
           alert("Download error");
         }
       }

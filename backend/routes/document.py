@@ -3,6 +3,12 @@ from models import db, Document, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
+from flask import Response
+import requests
+from flask import send_file
+import io
+
+
 
 import os
 import uuid
@@ -61,7 +67,6 @@ def get_current_user():
 def get_doc_types():
     return jsonify({"types": DOCUMENT_TYPES}), 200
 
-
 # ================= UPLOAD =================
 @doc_bp.route('/upload', methods=['POST'])
 @jwt_required()
@@ -116,16 +121,75 @@ def upload():
             }), 409
 
         # ================= CLOUDINARY UPLOAD =================
-        original_name = secure_filename(file.filename)
-        unique_name = f"{uuid.uuid4()}_{original_name}"
 
-        upload_result = cloudinary.uploader.upload(
-            file,
+        original_name = secure_filename(file.filename)
+
+        # remove spaces
+        original_name = original_name.replace(" ", "_")
+
+        # remove special chars
+        original_name = original_name.replace("(", "")
+        original_name = original_name.replace(")", "")
+        original_name = original_name.replace("&", "_")
+        original_name = original_name.replace("#", "_")
+
+        # split extension
+        name, ext = os.path.splitext(original_name)
+
+        # final safe public id
+        unique_name = f"{uuid.uuid4().hex}_{name}"
+
+        # upload to cloudinary
+        upload_result = cloudinary.uploader.upload_large(
+            file.stream,
             public_id=unique_name,
-            resource_type="raw"
+            resource_type="raw",
+            format=ext.replace(".", "")
         )
 
-        file_url = upload_result.get("secure_url")
+        # generate downloadable URL
+        file_url, options = cloudinary.utils.cloudinary_url(
+            unique_name,
+            resource_type="raw",
+            type="upload",
+            secure=True,
+            flags="attachment",
+            format=ext.replace(".", "")
+        )
+
+        print("FILE URL =", file_url)
+
+        # ================= SAVE TO DB =================
+
+        doc = Document(
+            part_no=part_no,
+            unique_id=unique_id,
+            filename=unique_name,
+            original_name=original_name,
+            file_url=file_url,
+            location=user.location,
+            doc_type=doc_type,
+            uploaded_by=user.username
+        )
+
+        db.session.add(doc)
+        db.session.commit()
+
+        logging.info(f"{user.username} uploaded {unique_name}")
+
+        return jsonify({
+            "msg": "Document uploaded successfully",
+            "doc": doc.to_dict()
+        }), 201
+
+    except Exception as e:
+        print("UPLOAD ERROR:", str(e))
+        logging.error(f"Upload error: {e}")
+
+        return jsonify({
+            "msg": "Upload failed",
+            "error": str(e)
+        }), 500
 
         # ================= SAVE TO DB =================
         doc = Document(
@@ -378,6 +442,7 @@ def delete(id):
 
 
 # ================= DOWNLOAD =================
+
 @doc_bp.route('/download/<int:id>', methods=['GET'])
 @jwt_required()
 def download(id):
@@ -391,9 +456,29 @@ def download(id):
         if not user.is_admin and doc.location != user.location:
             return jsonify({"msg": "Unauthorized"}), 403
 
-        return jsonify({
-            "download_url": doc.file_url
-        }), 200
+        # Fetch file from Cloudinary
+        response = requests.get(doc.file_url)
+
+        if response.status_code != 200:
+            return jsonify({
+                "msg": "Failed to fetch file"
+            }), 500
+
+        # Convert binary content into memory file
+        file_stream = io.BytesIO(response.content)
+
+        return send_file(
+            file_stream,
+            as_attachment=True,
+            download_name=doc.original_name,
+            mimetype=response.headers.get(
+                "Content-Type",
+                "application/octet-stream"
+            )
+        )
 
     except Exception as e:
-        return jsonify({"msg": "Download failed", "error": str(e)}), 500
+        return jsonify({
+            "msg": "Download failed",
+            "error": str(e)
+        }), 500
