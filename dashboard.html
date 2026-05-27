@@ -799,25 +799,21 @@
             },
           });
 
+          const data = await res.json();
+
           if (!res.ok) {
-            alert("Download failed");
+            alert(data.msg || "Download failed");
             return;
           }
 
-          const blob = await res.blob();
-
-          const url = window.URL.createObjectURL(blob);
-
+          // Direct browser download
           const a = document.createElement("a");
-          a.href = url;
-          a.download = filename || "document";
+          a.href = data.download_url;
+          a.download = data.filename || filename || "document";
 
           document.body.appendChild(a);
           a.click();
-
           a.remove();
-
-          window.URL.revokeObjectURL(url);
         } catch (e) {
           console.error(e);
           alert("Download error");

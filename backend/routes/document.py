@@ -387,6 +387,19 @@ def download(id):
                 "msg": "Unauthorized"
             }), 403
 
+        return jsonify({
+            "download_url": doc.file_url,
+            "filename": doc.original_name
+        })
+
+    except Exception as e:
+        print("DOWNLOAD ERROR:", str(e))
+
+        return jsonify({
+            "msg": "Download failed",
+            "error": str(e)
+        }), 500
+
         # ================= FETCH FROM CLOUDINARY =================
         response = requests.get(
             doc.file_url,
