@@ -117,19 +117,33 @@ def upload():
 
         # ================= CLOUDINARY UPLOAD =================
         original_name = secure_filename(file.filename)
+
+# remove spaces completely
         original_name = original_name.replace(" ", "_")
-        unique_name = f"{uuid.uuid4()}_{original_name}"
-        
+
+# remove special chars
+        original_name = original_name.replace("(", "")
+        original_name = original_name.replace(")", "")
+        original_name = original_name.replace("&", "_")
+        original_name = original_name.replace("#", "_")
+
+# split extension
+        name, ext = os.path.splitext(original_name)
+
+# FINAL SAFE PUBLIC ID
+        unique_name = f"{uuid.uuid4().hex}_{name}"
+
         upload_result = cloudinary.uploader.upload(
             file,
             public_id=unique_name,
             resource_type="raw",
-            type="upload"
-        )
+            format=ext.replace(".", "")
+         )
 
         file_url = upload_result.get("secure_url")
-        print("UPLOAD RESULT =", upload_result)
+
         print("FILE URL =", file_url)
+        
 
         # ================= SAVE TO DB =================
         doc = Document(
