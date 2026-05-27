@@ -126,7 +126,7 @@ def upload():
             use_filename=True,
             unique_filename=False
             type="upload",
-            access_mode="public
+            access_mode="public"
         )
 
         file_url = upload_result.get("secure_url")
