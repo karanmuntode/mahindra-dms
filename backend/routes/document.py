@@ -1,21 +1,19 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from models import db, Document, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
-from flask import Response
+
 import requests
-from flask import send_file
 import io
-
-
-
 import os
 import uuid
 import logging
 
 import cloudinary
 import cloudinary.uploader
+import cloudinary.utils
+
 
 doc_bp = Blueprint('document', __name__)
 
@@ -57,7 +55,12 @@ def allowed_file(filename):
 def get_current_user():
     try:
         username = get_jwt_identity()
-        return User.query.filter_by(username=username).first() if username else None
+
+        if not username:
+            return None
+
+        return User.query.filter_by(username=username).first()
+
     except Exception:
         return None
 
@@ -65,7 +68,10 @@ def get_current_user():
 # ================= DOCUMENT TYPES =================
 @doc_bp.route('/types', methods=['GET'])
 def get_doc_types():
-    return jsonify({"types": DOCUMENT_TYPES}), 200
+    return jsonify({
+        "types": DOCUMENT_TYPES
+    }), 200
+
 
 # ================= UPLOAD =================
 @doc_bp.route('/upload', methods=['POST'])
@@ -75,18 +81,26 @@ def upload():
         user = get_current_user()
 
         if not user:
-            return jsonify({"msg": "Invalid user / token"}), 401
+            return jsonify({
+                "msg": "Invalid user / token"
+            }), 401
 
         if not user.is_approved:
-            return jsonify({"msg": "Access denied — account not approved"}), 403
+            return jsonify({
+                "msg": "Access denied — account not approved"
+            }), 403
 
         if 'file' not in request.files:
-            return jsonify({"msg": "No file provided"}), 400
+            return jsonify({
+                "msg": "No file provided"
+            }), 400
 
         file = request.files['file']
 
         if file.filename == '':
-            return jsonify({"msg": "No file selected"}), 400
+            return jsonify({
+                "msg": "No file selected"
+            }), 400
 
         if not allowed_file(file.filename):
             return jsonify({
@@ -107,7 +121,7 @@ def upload():
                 "msg": f"Invalid document type. Choose from: {', '.join(DOCUMENT_TYPES)}"
             }), 400
 
-        # Duplicate check
+        # ================= DUPLICATE CHECK =================
         existing = Document.query.filter_by(
             part_no=part_no,
             unique_id=unique_id,
@@ -120,92 +134,50 @@ def upload():
                 "msg": "Document already exists for this Part No, Unique ID, Type and Location"
             }), 409
 
-        # ================= CLOUDINARY UPLOAD =================
-
+        # ================= CLEAN FILE NAME =================
         original_name = secure_filename(file.filename)
 
-        # remove spaces
         original_name = original_name.replace(" ", "_")
-
-        # remove special chars
         original_name = original_name.replace("(", "")
         original_name = original_name.replace(")", "")
         original_name = original_name.replace("&", "_")
         original_name = original_name.replace("#", "_")
 
-        # split extension
+        # ================= SPLIT NAME / EXT =================
         name, ext = os.path.splitext(original_name)
 
-        # final safe public id
+        ext = ext.replace(".", "").lower()
+
+        # ================= UNIQUE CLOUDINARY NAME =================
         unique_name = f"{uuid.uuid4().hex}_{name}"
 
-        # upload to cloudinary
+        # ================= CLOUDINARY UPLOAD =================
         upload_result = cloudinary.uploader.upload_large(
             file.stream,
             public_id=unique_name,
             resource_type="raw",
-            format=ext.replace(".", "")
+            format=ext
         )
 
-        # generate downloadable URL
+        # ================= DOWNLOADABLE CLOUDINARY URL =================
         file_url, options = cloudinary.utils.cloudinary_url(
             unique_name,
             resource_type="raw",
             type="upload",
             secure=True,
             flags="attachment",
-            format=ext.replace(".", "")
+            format=ext
         )
 
         print("FILE URL =", file_url)
 
-        # ================= SAVE TO DB =================
-
+        # ================= SAVE TO DATABASE =================
         doc = Document(
             part_no=part_no,
             unique_id=unique_id,
             filename=unique_name,
             original_name=original_name,
             file_url=file_url,
-            location=user.location,
-            doc_type=doc_type,
-            uploaded_by=user.username
-        )
-
-        db.session.add(doc)
-        db.session.commit()
-
-        logging.info(f"{user.username} uploaded {unique_name}")
-
-        return jsonify({
-            "msg": "Document uploaded successfully",
-            "doc": doc.to_dict()
-        }), 201
-
-    except Exception as e:
-        print("UPLOAD ERROR:", str(e))
-        logging.error(f"Upload error: {e}")
-
-        return jsonify({
-            "msg": "Upload failed",
-            "error": str(e)
-        }), 500
-
-        # ================= SAVE TO DB =================
-        doc = Document(
-            part_no=part_no,
-            unique_id=unique_id,
-
-            # store public_id here
-            filename=unique_name,
-
-            original_name=original_name,
-
-            # IMPORTANT:
-            # your models.py must contain:
-            # file_url = db.Column(db.String(500))
-            file_url=file_url,
-
             location=user.location,
             doc_type=doc_type,
             uploaded_by=user.username
@@ -239,13 +211,17 @@ def autocomplete():
         user = get_current_user()
 
         if not user:
-            return jsonify({"msg": "Unauthorized"}), 401
+            return jsonify({
+                "msg": "Unauthorized"
+            }), 401
 
         doc_type = request.args.get('doc_type', '').strip()
         query = request.args.get('q', '').strip()
 
         if not doc_type or not query:
-            return jsonify({"suggestions": []}), 200
+            return jsonify({
+                "suggestions": []
+            }), 200
 
         q = Document.query.filter_by(
             location=user.location,
@@ -277,7 +253,9 @@ def autocomplete():
 
                 seen.add(key)
 
-        return jsonify({"suggestions": suggestions}), 200
+        return jsonify({
+            "suggestions": suggestions
+        }), 200
 
     except Exception as e:
         return jsonify({
@@ -294,7 +272,9 @@ def search():
         user = get_current_user()
 
         if not user:
-            return jsonify({"msg": "Unauthorized"}), 401
+            return jsonify({
+                "msg": "Unauthorized"
+            }), 401
 
         data = request.json or {}
 
@@ -352,57 +332,6 @@ def search():
         }), 500
 
 
-# ================= ADMIN LIST =================
-@doc_bp.route('/all', methods=['GET'])
-@jwt_required()
-def list_all():
-    try:
-        user = get_current_user()
-
-        if not user or not user.is_admin:
-            return jsonify({"msg": "Admin only"}), 403
-
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 10))
-
-        doc_type = request.args.get('doc_type', '').strip()
-        location = request.args.get('location', '').strip()
-
-        query = Document.query
-
-        if doc_type:
-            query = query.filter_by(doc_type=doc_type)
-
-        if location:
-            query = query.filter_by(location=location)
-
-        total = query.count()
-
-        docs = query.order_by(
-            Document.uploaded_at.desc()
-        ).offset(
-            (page - 1) * per_page
-        ).limit(
-            per_page
-        ).all()
-
-        return jsonify({
-            "results": [d.to_dict() for d in docs],
-            "pagination": {
-                "total": total,
-                "page": page,
-                "per_page": per_page,
-                "total_pages": (total + per_page - 1) // per_page
-            }
-        }), 200
-
-    except Exception as e:
-        return jsonify({
-            "msg": "Error fetching documents",
-            "error": str(e)
-        }), 500
-
-
 # ================= DELETE =================
 @doc_bp.route('/delete/<int:id>', methods=['DELETE'])
 @jwt_required()
@@ -413,17 +342,22 @@ def delete(id):
         doc = db.session.get(Document, id)
 
         if not doc:
-            return jsonify({"msg": "Document not found"}), 404
+            return jsonify({
+                "msg": "Document not found"
+            }), 404
 
         if not user.is_admin and doc.location != user.location:
-            return jsonify({"msg": "Unauthorized"}), 403
+            return jsonify({
+                "msg": "Unauthorized"
+            }), 403
 
-        # Delete from Cloudinary
+        # ================= DELETE FROM CLOUDINARY =================
         try:
             cloudinary.uploader.destroy(
                 doc.filename,
                 resource_type="raw"
             )
+
         except Exception as cloud_err:
             print("Cloudinary delete error:", str(cloud_err))
 
@@ -442,31 +376,36 @@ def delete(id):
 
 
 # ================= DOWNLOAD =================
-
 @doc_bp.route('/download/<int:id>', methods=['GET'])
 @jwt_required()
 def download(id):
     try:
         user = get_current_user()
+
         doc = db.session.get(Document, id)
 
         if not doc:
-            return jsonify({"msg": "Document not found"}), 404
+            return jsonify({
+                "msg": "Document not found"
+            }), 404
 
         if not user.is_admin and doc.location != user.location:
-            return jsonify({"msg": "Unauthorized"}), 403
+            return jsonify({
+                "msg": "Unauthorized"
+            }), 403
 
-        # Fetch file from Cloudinary
+        # ================= FETCH FROM CLOUDINARY =================
         response = requests.get(doc.file_url)
 
         if response.status_code != 200:
             return jsonify({
-                "msg": "Failed to fetch file"
+                "msg": "Failed to fetch file from Cloudinary"
             }), 500
 
-        # Convert binary content into memory file
+        # ================= CONVERT TO MEMORY STREAM =================
         file_stream = io.BytesIO(response.content)
 
+        # ================= SEND FILE =================
         return send_file(
             file_stream,
             as_attachment=True,
