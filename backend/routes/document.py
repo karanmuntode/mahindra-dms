@@ -100,38 +100,6 @@ def upload():
 
         if not part_no or not unique_id:
             return jsonify({
-# ================= UPLOAD =================
-@doc_bp.route('/upload', methods=['POST'])
-@jwt_required()
-def upload():
-    try:
-        user = get_current_user()
-
-        if not user:
-            return jsonify({"msg": "Invalid user / token"}), 401
-
-        if not user.is_approved:
-            return jsonify({"msg": "Access denied — account not approved"}), 403
-
-        if 'file' not in request.files:
-            return jsonify({"msg": "No file provided"}), 400
-
-        file = request.files['file']
-
-        if file.filename == '':
-            return jsonify({"msg": "No file selected"}), 400
-
-        if not allowed_file(file.filename):
-            return jsonify({
-                "msg": f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
-            }), 400
-
-        part_no = request.form.get('part_no', '').strip()
-        unique_id = request.form.get('unique_id', '').strip()
-        doc_type = request.form.get('doc_type', '').strip()
-
-        if not part_no or not unique_id:
-            return jsonify({
                 "msg": "Part No and Unique ID are required"
             }), 400
 
