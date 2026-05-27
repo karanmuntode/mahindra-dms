@@ -122,7 +122,9 @@ def upload():
         upload_result = cloudinary.uploader.upload(
             file,
             public_id=unique_name,
-            resource_type="raw"
+            resource_type="auto",
+            use_filename=True,
+            unique_filename=False
         )
 
         file_url = upload_result.get("secure_url")
