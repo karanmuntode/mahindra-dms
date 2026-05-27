@@ -160,14 +160,7 @@ def upload():
         )
 
         # ================= DOWNLOADABLE CLOUDINARY URL =================
-        file_url, options = cloudinary.utils.cloudinary_url(
-            unique_name,
-            resource_type="raw",
-            type="upload",
-            secure=True,
-            flags="attachment",
-            format=ext
-        )
+        file_url = upload_result.get("secure_url")
 
         print("FILE URL =", file_url)
 
