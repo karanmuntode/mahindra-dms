@@ -123,41 +123,41 @@ def upload():
 
         # ================= CLOUDINARY UPLOAD =================
         # ================= CLOUDINARY UPLOAD =================
-         original_name = secure_filename(file.filename)
+           original_name = secure_filename(file.filename)
 
 # remove spaces completely
-         original_name = original_name.replace(" ", "_")
+           original_name = original_name.replace(" ", "_")
 
 # remove special chars
-         original_name = original_name.replace("(", "")
-         original_name = original_name.replace(")", "")
-         original_name = original_name.replace("&", "_")
-         original_name = original_name.replace("#", "_")
+           original_name = original_name.replace("(", "")
+           original_name = original_name.replace(")", "")
+           original_name = original_name.replace("&", "_")
+           original_name = original_name.replace("#", "_")
 
 # split extension
-         name, ext = os.path.splitext(original_name)
+           name, ext = os.path.splitext(original_name)
 
 # FINAL SAFE PUBLIC ID
-         unique_name = f"{uuid.uuid4().hex}_{name}"
+           unique_name = f"{uuid.uuid4().hex}_{name}"
 
-         upload_result = cloudinary.uploader.upload_large(
-             file.stream,
-             public_id=unique_name,
-             resource_type="raw",
-             format=ext.replace(".", "")
-          )
-
-# IMPORTANT FIX
-          file_url, options = cloudinary.utils.cloudinary_url(
-              unique_name,
-              resource_type="raw",
-              type="upload",
-              secure=True,
-              flags="attachment",
-              format=ext.replace(".", "")
+           upload_result = cloudinary.uploader.upload_large(
+               file.stream,
+               public_id=unique_name,
+               resource_type="raw",
+               format=ext.replace(".", "")
             )
 
-             print("FILE URL =", file_url)
+# IMPORTANT FIX
+            file_url, options = cloudinary.utils.cloudinary_url(
+                unique_name,
+                resource_type="raw",
+                type="upload",
+                secure=True,
+                flags="attachment",
+                format=ext.replace(".", "")
+              )
+
+               print("FILE URL =", file_url)
 
         # ================= SAVE TO DB =================
         doc = Document(
