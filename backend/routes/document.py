@@ -3,7 +3,7 @@ from models import db, Document, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
-
+from flask import redirect
 import requests
 import io
 import os
@@ -394,13 +394,16 @@ def download(id):
                 "msg": "Unauthorized"
             }), 403
 
-        # ================= FETCH FROM CLOUDINARY =================
-        response = requests.get(doc.file_url)
+        # ================= REDIRECT TO CLOUDINARY =================
+        return redirect(doc.file_url)
 
-        if response.status_code != 200:
-            return jsonify({
-                "msg": "Failed to fetch file from Cloudinary"
-            }), 500
+    except Exception as e:
+        print("DOWNLOAD ERROR:", str(e))
+
+        return jsonify({
+            "msg": "Download failed",
+            "error": str(e)
+        }), 500
 
         # ================= CONVERT TO MEMORY STREAM =================
         file_stream = io.BytesIO(response.content)
