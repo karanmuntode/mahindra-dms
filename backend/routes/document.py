@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
 from flask import Response
-
+import requests
 
 
 import os
@@ -413,7 +413,6 @@ def download(id):
         if not user.is_admin and doc.location != user.location:
             return jsonify({"msg": "Unauthorized"}), 403
 
-        # Fetch file from Cloudinary
         cloudinary_response = requests.get(
             doc.file_url,
             stream=True
