@@ -133,7 +133,7 @@ def upload():
 # FINAL SAFE PUBLIC ID
         unique_name = f"{uuid.uuid4().hex}_{name}"
 
-        upload_result = cloudinary.uploader.upload(
+        upload_result = cloudinary.uploader.upload_large(
             file,
             public_id=unique_name,
             resource_type="raw",
