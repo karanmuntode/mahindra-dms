@@ -105,26 +105,58 @@ def verify_otp():
     return jsonify({"msg": "Email verified successfully"}), 200
 
 
+
 # ================= SEND RESET OTP =================
 @auth_bp.route('/send-reset-otp', methods=['POST'])
 @limiter.limit("3 per minute")
 def send_reset_otp():
-    data = request.json or {}
-    user = User.query.filter_by(email=data.get("email", "").lower()).first()
-
-    if not user:
-        return jsonify({"msg": "User not found"}), 404
-
-    otp = str(random.randint(100000, 999999))
-    user.otp = otp
-    db.session.commit()
 
     try:
-        send_otp_email(user.email, otp)
-    except Exception as e:
-        print("EMAIL ERROR:", e)
+        data = request.json or {}
 
-    return jsonify({"msg": "OTP sent to email"}), 200
+        email = data.get("email", "").strip().lower()
+
+        if not email:
+            return jsonify({
+                "msg": "Email is required"
+            }), 400
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            return jsonify({
+                "msg": "User not found"
+            }), 404
+
+        otp = str(random.randint(100000, 999999))
+
+        print("RESET OTP:", otp)
+        print("SENDING TO:", user.email)
+
+        # SEND MAIL FIRST
+        send_otp_email(user.email, otp)
+
+        # SAVE OTP ONLY AFTER MAIL SUCCESS
+        user.otp = otp
+
+        db.session.commit()
+
+        print("RESET OTP MAIL SENT SUCCESSFULLY")
+
+        return jsonify({
+            "msg": "OTP sent to email"
+        }), 200
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        print("RESET OTP EMAIL ERROR:", str(e))
+
+        return jsonify({
+            "msg": "Failed to send OTP email",
+            "error": str(e)
+        }), 500
 
 
 # ================= RESET PASSWORD =================
