@@ -54,28 +54,39 @@ def signup():
 
     otp = str(random.randint(100000, 999999))
 
-    user = User(
-        username=username,
-        password=generate_password_hash(password),
-        email=email,
-        role="user",
-        location=location,
-        is_admin=False,
-        is_approved=False,
-        otp=otp,
-        otp_verified=False
-    )
-
-    db.session.add(user)
-    db.session.commit()
-
     try:
+        # SEND OTP FIRST
         send_otp_email(email, otp)
+
+        # CREATE USER ONLY AFTER EMAIL SUCCESS
+        user = User(
+            username=username,
+            password=generate_password_hash(password),
+            email=email,
+            role="user",
+            location=location,
+            is_admin=False,
+            is_approved=False,
+            otp=otp,
+            otp_verified=False
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Signup successful! OTP sent to email. Wait for admin approval.",
+            "approved": False
+        }), 201
+
     except Exception as e:
-        print("EMAIL ERROR:", e)
+        print("SIGNUP EMAIL ERROR:", str(e))
 
-    return jsonify({"msg": "Signup successful! OTP sent to email. Wait for admin approval.", "approved": False}), 201
+        db.session.rollback()
 
+        return jsonify({
+            "error": "Failed to send OTP email"
+        }), 500
 
 # ================= VERIFY OTP =================
 @auth_bp.route('/verify-otp', methods=['POST'])
