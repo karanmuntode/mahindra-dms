@@ -214,7 +214,26 @@
           onclick="showSection('dashboard')"
           id="nav-dashboard"
         >
-          <span class="sidebar-icon">📊</span> Dashboard
+          <span class="sidebar-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-layout-dashboard-icon lucide-layout-dashboard"
+            >
+              <rect width="7" height="9" x="3" y="3" rx="1" />
+              <rect width="7" height="5" x="14" y="3" rx="1" />
+              <rect width="7" height="9" x="14" y="12" rx="1" />
+              <rect width="7" height="5" x="3" y="16" rx="1" />
+            </svg>
+          </span>
+          Dashboard
         </div>
 
         <div class="sidebar-section">User Management</div>
@@ -249,7 +268,26 @@
 
         <div class="sidebar-section">Documents</div>
         <div class="sidebar-item" onclick="showSection('docs')" id="nav-docs">
-          <span class="sidebar-icon">📁</span> All Documents
+          <span class="sidebar-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-folder-closed-icon lucide-folder-closed"
+            >
+              <path
+                d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+              />
+              <path d="M2 10h20" />
+            </svg>
+          </span>
+          All Documents
         </div>
       </div>
 
@@ -265,7 +303,7 @@
               </div>
             </div>
             <button class="btn btn-outline" onclick="loadDashboard()">
-              🔄 Refresh
+              Refresh
             </button>
           </div>
 
@@ -294,7 +332,29 @@
               <div class="stat-label">Approved Users</div>
             </div>
             <div class="stat-card yellow">
-              <div class="stat-icon yellow">⏳</div>
+              <div class="stat-icon yellow">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-hourglass-icon lucide-hourglass"
+                >
+                  <path d="M5 22h14" />
+                  <path d="M5 2h14" />
+                  <path
+                    d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"
+                  />
+                  <path
+                    d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
+                  />
+                </svg>
+              </div>
               <div class="stat-value" id="statPending">—</div>
               <div class="stat-label">Pending Approval</div>
             </div>
@@ -312,15 +372,15 @@
               <div class="chart-wrap"><canvas id="userChart"></canvas></div>
             </div>
             <div class="card">
-              <div class="card-title">📄 Documents by Type</div>
+              <div class="card-title">Documents by Type</div>
               <div class="chart-wrap"><canvas id="docTypeChart"></canvas></div>
             </div>
             <div class="card">
-              <div class="card-title">📍 Documents by Location</div>
+              <div class="card-title">Documents by Location</div>
               <div class="chart-wrap"><canvas id="docLocChart"></canvas></div>
             </div>
             <div class="card">
-              <div class="card-title">🏭 Users by Location</div>
+              <div class="card-title">Users by Location</div>
               <div class="chart-wrap"><canvas id="userLocChart"></canvas></div>
             </div>
           </div>
@@ -336,7 +396,7 @@
               </div>
             </div>
             <button class="btn btn-outline" onclick="loadPending(1)">
-              🔄 Refresh
+              Refresh
             </button>
           </div>
 
@@ -440,7 +500,22 @@
                   <option value="Haridwar">Haridwar</option>
                 </select>
                 <button class="btn btn-outline" onclick="loadDocs(1)">
-                  🔍 Filter
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-funnel-icon lucide-funnel"
+                  >
+                    <path
+                      d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -727,7 +802,7 @@
               <td style="color:var(--gray-400)">${(page - 1) * 10 + i + 1}</td>
               <td><strong>${esc(u.username)}</strong></td>
               <td style="color:var(--gray-500)">${esc(u.email || "—")}</td>
-              <td>📍 ${esc(u.location)}</td>
+              <td><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg> ${esc(u.location)}</td>
               <td><span class="badge badge-user">👤 User</span></td>
               <td style="color:var(--gray-400);font-size:0.8rem">${u.created_at ? u.created_at.slice(0, 10) : "—"}</td>
               <td>
@@ -800,19 +875,19 @@
               <td style="color:var(--gray-400)">${(page - 1) * 10 + i + 1}</td>
               <td><strong>${esc(u.username)}</strong></td>
               <td style="color:var(--gray-500);font-size:0.82rem">${esc(u.email || "—")}</td>
-              <td>📍 ${esc(u.location)}</td>
+              <td><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg> ${esc(u.location)}</td>
               <td>${roleBadge(u.role)}</td>
               <td>${
                 u.is_approved
                   ? '<span class="badge badge-approved">✅ Active</span>'
-                  : '<span class="badge badge-pending">⏳ Pending</span>'
+                  : '<span class="badge badge-pending"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hourglass-icon lucide-hourglass"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg> Pending</span>'
               }</td>
               <td style="color:var(--gray-400);font-size:0.78rem">${u.created_at ? u.created_at.slice(0, 10) : "—"}</td>
               <td>
                 <div class="actions-cell">
                   ${!u.is_approved ? `<button class="btn btn-sm btn-green" onclick="approveUser(${u.id})">✅ Approve</button>` : ""}
-                  ${u.is_approved ? `<button class="btn btn-sm btn-yellow" onclick="toggleApproval(${u.id})">🚫 Suspend</button>` : ""}
-                  ${u.role === "user" && currentUser.role === "admin" ? `<button class="btn btn-sm btn-purple" onclick="makeSubadmin(${u.id})">⭐ Subadmin</button>` : ""}
+                  ${u.is_approved ? `<button class="btn btn-sm btn-yellow" onclick="toggleApproval(${u.id})"> Suspend</button>` : ""}
+                  ${u.role === "user" && currentUser.role === "admin" ? `<button class="btn btn-sm btn-purple" onclick="makeSubadmin(${u.id})"> Subadmin</button>` : ""}
                   ${u.role === "subadmin" && currentUser.role === "admin" ? `<button class="btn btn-sm btn-outline" onclick="revokeSubadmin(${u.id})">↩ Revoke</button>` : ""}
                   ${u.role !== "admin" ? `<button class="btn btn-sm btn-red" onclick="deleteUser(${u.id})">🗑</button>` : ""}
                 </div>
@@ -834,8 +909,8 @@
         if (role === "admin")
           return '<span class="badge badge-admin">🛡 Admin</span>';
         if (role === "subadmin")
-          return '<span class="badge badge-subadmin">⭐ Subadmin</span>';
-        return '<span class="badge badge-user">👤 User</span>';
+          return '<span class="badge badge-subadmin"> Subadmin</span>';
+        return '<span class="badge badge-user"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> User</span>';
       }
 
       // ===== DOCUMENTS =====
@@ -900,7 +975,7 @@
               <td><strong>${esc(d.part_no)}</strong></td>
               <td>${esc(d.unique_id)}</td>
               <td><span class="badge badge-doc">${esc(d.doc_type)}</span></td>
-              <td>📍 ${esc(d.location)}</td>
+              <td><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg> ${esc(d.location)}</td>
               <td style="color:var(--gray-500)">${esc(d.uploaded_by || "—")}</td>
               <td style="color:var(--gray-400);font-size:0.8rem">${d.uploaded_at ? d.uploaded_at.slice(0, 10) : "—"}</td>
               <td>

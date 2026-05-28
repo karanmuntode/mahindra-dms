@@ -122,6 +122,8 @@
       .empty-text { font-size: 1rem; font-weight: 600; color: var(--gray-500); }
       .empty-sub { font-size: 0.875rem; margin-top: 4px; }
 
+
+
       /* ALERT */
       .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
       .alert-success { background: var(--green-100); color: var(--green-600); border: 1px solid #86EFAC; }
@@ -190,14 +192,49 @@
           onclick="showSection('upload')"
           id="nav-upload"
         >
-          <span class="sidebar-icon">⬆️</span> Upload Document
+          <span class="sidebar-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-upload-icon lucide-upload"
+            >
+              <path d="M12 3v12" />
+              <path d="m17 8-5-5-5 5" />
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            </svg>
+          </span>
+          Upload Document
         </div>
         <div
           class="sidebar-item"
           onclick="showSection('search')"
           id="nav-search"
         >
-          <span class="sidebar-icon">🔍</span> Search Documents
+          <span class="sidebar-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-search-icon lucide-search"
+            >
+              <path d="m21 21-4.34-4.34" />
+              <circle cx="11" cy="11" r="8" />
+            </svg>
+          </span>
+          Search Documents
         </div>
       </div>
 
@@ -215,7 +252,7 @@
           <div id="uploadAlert"></div>
 
           <div class="card">
-            <div class="card-title">📋 Document Information</div>
+            <div class="card-title">Document Information</div>
 
             <!-- Step 1: Doc Type -->
             <div class="tag-step">Step 1 — Select Document Type</div>
@@ -271,7 +308,7 @@
                 ondragleave="onDragLeave(event)"
                 ondrop="onDrop(event)"
               >
-                <div class="dropzone-icon">📄</div>
+                <div class="dropzone-icon">📑</div>
                 <div class="dropzone-text">Click to browse or drag & drop</div>
                 <div class="dropzone-sub">
                   PDF, PNG, JPG, DOCX, XLSX — Max 25MB
@@ -290,7 +327,7 @@
                   <div class="file-size" id="fileSize"></div>
                 </div>
                 <button class="btn btn-sm btn-red" onclick="clearFile()">
-                  ✕ Remove
+                  Remove
                 </button>
               </div>
 
@@ -300,7 +337,7 @@
                   id="uploadBtn"
                   onclick="doUpload()"
                 >
-                  ⬆️ Upload Document
+                  Upload Document
                 </button>
               </div>
             </div>
@@ -319,7 +356,7 @@
           <div id="searchAlert"></div>
 
           <div class="card">
-            <div class="card-title">🔍 Search Filters</div>
+            <div class="card-title">Search Filters</div>
 
             <!-- Step 1 -->
             <div class="tag-step">Step 1 — Select Document Type First</div>
@@ -363,7 +400,7 @@
                     style="width: 100%"
                     onclick="doSearch(1)"
                   >
-                    🔍 Search
+                    Search
                   </button>
                 </div>
               </div>
@@ -374,7 +411,7 @@
               class="search-required-msg"
               style="display: none; margin-top: 1rem"
             >
-              ⚠️ Please select a document type above before searching
+              Please select a document type above before searching
             </div>
           </div>
 
